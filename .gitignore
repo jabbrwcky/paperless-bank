@@ -1,0 +1,10 @@
+/paperless-bank
+*-token.json
+*.env
+.env
+.envrc
+.DS_Store
+
+# Reference material (kept locally, not in history)
+*.pdf
+*.webp
