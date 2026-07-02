@@ -21,10 +21,10 @@
 
 ### Comdirect integration (`internal/bank/comdirect/`)
 
-- [ ] `auth.go` — full 6-step OAuth2 + TAN flow (see Architecture.md)
-- [ ] `auth.go` — token cache read/write (JSON file)
-- [ ] `auth.go` — automatic token refresh before expiry
-- [ ] `client.go` — authenticated HTTP client with `x-http-request-info` header injection
+- [x] `auth.go` — full 6-step OAuth2 + TAN flow (see Architecture.md)
+- [x] `auth.go` — token cache read/write (JSON file)
+- [x] `auth.go` — automatic token refresh before expiry
+- [x] `client.go` — authenticated HTTP client with `x-http-request-info` header injection
 - [ ] `documents.go` — `ListDocuments` with pagination
 - [ ] `documents.go` — `DownloadDocument`
 - [ ] Unit tests with `httptest` for auth and document endpoints

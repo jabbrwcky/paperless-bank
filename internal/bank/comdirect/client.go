@@ -3,6 +3,7 @@ package comdirect
 import (
 	"context"
 	"crypto/rand"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -22,9 +23,16 @@ func init() {
 
 // Client is an authenticated Comdirect API client.
 type Client struct {
-	cfg       bank.Config
-	http      *http.Client
-	token     *tokenCache
+	cfg  bank.Config
+	http *http.Client
+	// token holds the cached OAuth tokens once authenticated.
+	token *tokenCache
+	// clientSessionID is a client-generated UUID sent in every
+	// x-http-request-info header. It must stay constant for the whole
+	// login flow and is distinct from the server session identifier.
+	clientSessionID string
+	// sessionID is the server-side session identifier returned by the
+	// session-status endpoint, used in the validate/activate URLs.
 	sessionID string
 }
 
@@ -33,8 +41,9 @@ type Client struct {
 // calling ListDocuments or DownloadDocument.
 func New(cfg bank.Config) (*Client, error) {
 	c := &Client{
-		cfg:  cfg,
-		http: &http.Client{Timeout: 30 * time.Second},
+		cfg:             cfg,
+		http:            &http.Client{Timeout: 30 * time.Second},
+		clientSessionID: newUUID(),
 	}
 	_ = c.loadTokenCache() // absence of a cache file is not an error here
 	return c, nil
@@ -55,17 +64,30 @@ func (c *Client) do(ctx context.Context, method, path string, body io.Reader) (*
 }
 
 // requestInfo returns the JSON value required by Comdirect for x-http-request-info.
+// The sessionId is the stable client-generated UUID; requestId is a fresh
+// numeric value per request (Comdirect requires 1–9 characters).
 func (c *Client) requestInfo() string {
 	return fmt.Sprintf(
 		`{"clientRequestId":{"sessionId":%q,"requestId":%q}}`,
-		c.sessionID, newRequestID(),
+		c.clientSessionID, newRequestID(),
 	)
 }
 
+// newRequestID returns a random 9-digit numeric string.
 func newRequestID() string {
-	var b [8]byte
+	var b [4]byte
 	_, _ = rand.Read(b[:])
-	return fmt.Sprintf("%x", b)
+	n := binary.BigEndian.Uint32(b[:]) % 1_000_000_000
+	return fmt.Sprintf("%09d", n)
+}
+
+// newUUID returns a random RFC 4122 version 4 UUID.
+func newUUID() string {
+	var b [16]byte
+	_, _ = rand.Read(b[:])
+	b[6] = (b[6] & 0x0f) | 0x40 // version 4
+	b[8] = (b[8] & 0x3f) | 0x80 // variant 10
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16])
 }
 
 func checkStatus(resp *http.Response, wantStatus int) error {
