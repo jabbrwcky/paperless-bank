@@ -1,8 +1,8 @@
 /paperless-bank
 *-token.json
-*.env
+*.env*
 .env
-.envrc
+.env*
 .DS_Store
 
 # Reference material (kept locally, not in history)
