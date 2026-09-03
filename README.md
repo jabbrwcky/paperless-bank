@@ -72,6 +72,13 @@ TAN — whichever your account returns) and stores the resulting token so `sync`
 unattended afterwards; tokens are refreshed automatically and re-running `auth` is only needed
 once the refresh token itself expires.
 
+`sync` only uploads documents whose MIME type is in `--mime-types`/`PAPERLESS_BANK_MIME_TYPES`
+(comma-separated, default `application/pdf`) — paperless-ngx rejects file types it can't consume,
+and bank inboxes mix in things like `text/html` marketing notices alongside PDF statements.
+Documents of any other type are skipped, not treated as errors. `sync` also skips documents that
+already exist in paperless-ngx (matched by original filename), so it's safe to re-run on a
+schedule without creating duplicates.
+
 ## Extend
 
 ### Add a bank

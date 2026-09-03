@@ -10,7 +10,9 @@ import (
 )
 
 // SyncCmd fetches new documents from all configured banks and uploads them to paperless-ngx.
-type SyncCmd struct{}
+type SyncCmd struct {
+	MimeTypes []string `name:"mime-types" help:"Comma-separated MIME types allowed for upload; documents of any other type are skipped" default:"application/pdf" env:"PAPERLESS_BANK_MIME_TYPES"`
+}
 
 func (s *SyncCmd) Run(cli *CLI) error {
 	if cli.Paperless.URL == "" || cli.Paperless.Token == "" {
@@ -33,7 +35,7 @@ func (s *SyncCmd) Run(cli *CLI) error {
 		if err != nil {
 			return err
 		}
-		orch := &sync.Orchestrator{Source: src, Paperless: client}
+		orch := &sync.Orchestrator{Source: src, Paperless: client, AllowedMIMETypes: s.MimeTypes}
 		if err := orch.Run(ctx); err != nil && firstErr == nil {
 			firstErr = err
 		}

@@ -136,13 +136,19 @@ Response documents include `mimeType`, `name`, `dateCreation`.
 for each configured bank:
   1. Load/refresh access token from cache
   2. Call ListDocuments() (Comdirect: follows paging-first/paging-count until all matches fetched)
-  3. For each document not yet in paperless-ngx:
-     a. DownloadDocument()
-     b. POST /api/documents/post_document/ to paperless-ngx (multipart, filename preserved)
+  3. For each document:
+     a. Skip if its MIME type is not in --mime-types (default: application/pdf only)
+     b. Skip if it already exists in paperless-ngx
+     c. DownloadDocument()
+     d. POST /api/documents/post_document/ to paperless-ngx (multipart, filename preserved)
   4. Log outcome (uploaded / skipped / error) per document
 ```
 
 Duplicate detection: query paperless-ngx for existing documents by original filename before uploading. If a document with the same filename already exists, skip it.
+
+MIME type filtering exists because paperless-ngx rejects file types it doesn't support (e.g. a
+bank's `text/html` marketing notices mixed into the same inbox as PDF statements) — uploading them
+unfiltered fails the whole document rather than just that one item.
 
 ## Error handling
 
