@@ -14,6 +14,17 @@
 - Interfaces belong in the package that **uses** them, not the package that implements them.
 - Tests live alongside the code they test (`foo_test.go` in the same package or `foo_test` package for black-box tests). Use `net/http/httptest` for HTTP mocking — no test-double libraries.
 
+### Definition of Done
+
+1. For new code there is sufficient test coverage >75%
+2. Code is formatted with `gofmt` and `go vet` passes without errors
+3. Code is documented with GoDoc-style comments
+4. Code is linted with `golangci-lint` and passes without errors
+5. Code is ready for review and merge
+6. Design documentation is up-to-date
+7. User documentation is up-to-date
+8. Architectural documentation is up to date. Architectural decisions are captured in ADRs (Architecture decision records). Changes are captures in new ADRs, noting the superseded ADR.
+
 ## Adding a new bank
 
 1. Create `internal/bank/<bankname>/` with at minimum:
