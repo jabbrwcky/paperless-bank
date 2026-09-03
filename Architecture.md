@@ -119,8 +119,8 @@ Tokens are refreshed automatically using the refresh_token before expiry. If the
 **Document API:**
 
 ```
-GET  /api/banking/v3/documents          → paginated list of inbox documents
-GET  /api/banking/v3/documents/{id}/content  → raw document bytes
+GET  /api/messages/clients/user/v2/documents   → paginated list of inbox documents ("user" is literal, not a placeholder)
+GET  /api/messages/v2/documents/{documentId}   → raw document bytes (native format: application/pdf or text/html, never JSON)
 ```
 
 Response documents include `mimeType`, `name`, `dateCreation`.

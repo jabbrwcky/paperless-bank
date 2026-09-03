@@ -49,8 +49,10 @@ func New(cfg bank.Config) (*Client, error) {
 	return c, nil
 }
 
-// do executes an authenticated HTTP request against the Comdirect API.
-func (c *Client) do(ctx context.Context, method, path string, body io.Reader) (*http.Response, error) {
+// do executes an authenticated HTTP request against the Comdirect API. An
+// empty accept defaults to "application/json"; pass an explicit value for
+// endpoints that don't return JSON (e.g. document downloads).
+func (c *Client) do(ctx context.Context, method, path, accept string, body io.Reader) (*http.Response, error) {
 	req, err := http.NewRequestWithContext(ctx, method, baseURL+path, body)
 	if err != nil {
 		return nil, err
@@ -59,7 +61,10 @@ func (c *Client) do(ctx context.Context, method, path string, body io.Reader) (*
 		req.Header.Set("Authorization", "Bearer "+c.token.AccessToken)
 	}
 	req.Header.Set("x-http-request-info", c.requestInfo())
-	req.Header.Set("Accept", "application/json")
+	if accept == "" {
+		accept = "application/json"
+	}
+	req.Header.Set("Accept", accept)
 	return c.http.Do(req)
 }
 

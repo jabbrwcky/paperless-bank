@@ -9,7 +9,8 @@ import (
 	"github.com/jabbrwcky/paperless-bank/internal/bank"
 )
 
-// documentListResponse mirrors the Comdirect GET /api/banking/v3/documents response.
+// documentListResponse mirrors the Comdirect
+// GET /api/messages/clients/user/v2/documents response (ListResourceDocument).
 type documentListResponse struct {
 	Paging struct {
 		Index   int `json:"index"`
@@ -19,22 +20,22 @@ type documentListResponse struct {
 }
 
 type documentItem struct {
-	DocumentID      string `json:"documentId"`
-	Name            string `json:"name"`
-	DateCreation    string `json:"dateCreation"` // "YYYY-MM-DD"
-	MimeType        string `json:"mimeType"`
-	ReadStatus      string `json:"readStatus"` // "READ" | "UNREAD"
-	DeletionAllowed bool   `json:"deletionAllowed"`
+	DocumentID   string `json:"documentId"`
+	Name         string `json:"name"`
+	DateCreation string `json:"dateCreation"` // "YYYY-MM-DD"
+	MimeType     string `json:"mimeType"`
+	Deletable    bool   `json:"deletable"`
 }
 
 // ListDocuments returns all documents in the Comdirect inbox.
-// GET /api/banking/v3/documents
+// GET /api/messages/clients/user/v2/documents ("user" is a literal path
+// segment, not a placeholder for the actual username).
 func (c *Client) ListDocuments(ctx context.Context) ([]bank.Document, error) {
 	if err := c.EnsureAuthenticated(ctx); err != nil {
 		return nil, err
 	}
 
-	resp, err := c.do(ctx, "GET", "/api/banking/v3/documents", nil)
+	resp, err := c.do(ctx, "GET", "/api/messages/clients/user/v2/documents", "", nil)
 	if err != nil {
 		return nil, fmt.Errorf("list documents: %w", err)
 	}
@@ -62,14 +63,16 @@ func (c *Client) ListDocuments(ctx context.Context) ([]bank.Document, error) {
 	return docs, nil
 }
 
-// DownloadDocument fetches the raw bytes of a single document.
-// GET /api/banking/v3/documents/{id}/content
+// DownloadDocument fetches the raw bytes of a single document. The endpoint
+// returns the document in its native format (application/pdf or text/html),
+// never JSON, so it must not send the default Accept: application/json.
+// GET /api/messages/v2/documents/{documentId}
 func (c *Client) DownloadDocument(ctx context.Context, id string) ([]byte, error) {
 	if err := c.EnsureAuthenticated(ctx); err != nil {
 		return nil, err
 	}
 
-	resp, err := c.do(ctx, "GET", "/api/banking/v3/documents/"+id+"/content", nil)
+	resp, err := c.do(ctx, "GET", "/api/messages/v2/documents/"+id, "application/pdf, text/html, */*", nil)
 	if err != nil {
 		return nil, fmt.Errorf("download %s: %w", id, err)
 	}
