@@ -14,7 +14,8 @@ import (
 	"github.com/jabbrwcky/paperless-bank/internal/httpx"
 )
 
-const baseURL = "https://api.comdirect.de"
+// defaultBaseURL is overridden by tests via Client.baseURL.
+const defaultBaseURL = "https://api.comdirect.de"
 
 func init() {
 	bank.Register("comdirect", func(cfg bank.Config) (bank.DocumentSource, error) {
@@ -26,6 +27,9 @@ func init() {
 type Client struct {
 	cfg  bank.Config
 	http *http.Client
+	// baseURL is defaultBaseURL in production; tests override it to point
+	// at an httptest.Server.
+	baseURL string
 	// token holds the cached OAuth tokens once authenticated.
 	token *tokenCache
 	// clientSessionID is a client-generated UUID sent in every
@@ -44,6 +48,7 @@ func New(cfg bank.Config) (*Client, error) {
 	c := &Client{
 		cfg:             cfg,
 		http:            &http.Client{Timeout: 30 * time.Second},
+		baseURL:         defaultBaseURL,
 		clientSessionID: newUUID(),
 	}
 	_ = c.loadTokenCache() // absence of a cache file is not an error here
@@ -54,7 +59,7 @@ func New(cfg bank.Config) (*Client, error) {
 // empty accept defaults to "application/json"; pass an explicit value for
 // endpoints that don't return JSON (e.g. document downloads).
 func (c *Client) do(ctx context.Context, method, path, accept string, body io.Reader) (*http.Response, error) {
-	req, err := http.NewRequestWithContext(ctx, method, baseURL+path, body)
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, body)
 	if err != nil {
 		return nil, err
 	}

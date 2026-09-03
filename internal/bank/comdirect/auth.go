@@ -133,7 +133,7 @@ func (c *Client) Authenticate(ctx context.Context) error {
 
 // requestToken performs a form-encoded POST to /oauth/token.
 func (c *Client) requestToken(ctx context.Context, form url.Values) (*oauthTokenResponse, error) {
-	req, err := http.NewRequestWithContext(ctx, "POST", baseURL+"/oauth/token", strings.NewReader(form.Encode()))
+	req, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+"/oauth/token", strings.NewReader(form.Encode()))
 	if err != nil {
 		return nil, err
 	}
@@ -281,7 +281,7 @@ func (c *Client) sessionRequest(ctx context.Context, method, path string, body [
 	if body != nil {
 		r = bytes.NewReader(body)
 	}
-	req, err := http.NewRequestWithContext(ctx, method, baseURL+path, r)
+	req, err := http.NewRequestWithContext(ctx, method, c.baseURL+path, r)
 	if err != nil {
 		return nil, err
 	}

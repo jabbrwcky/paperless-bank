@@ -135,7 +135,7 @@ Response documents include `mimeType`, `name`, `dateCreation`.
 ```
 for each configured bank:
   1. Load/refresh access token from cache
-  2. Call ListDocuments()
+  2. Call ListDocuments() (Comdirect: follows paging-first/paging-count until all matches fetched)
   3. For each document not yet in paperless-ngx:
      a. DownloadDocument()
      b. POST /api/documents/post_document/ to paperless-ngx (multipart, filename preserved)
