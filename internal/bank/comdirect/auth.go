@@ -46,6 +46,23 @@ type onceAuthInfo struct {
 	Typ            string   `json:"typ"`
 	AvailableTypes []string `json:"availableTypes"`
 	Challenge      string   `json:"challenge"`
+	// Link, when present, points to an endpoint that reports whether a
+	// P_TAN_PUSH challenge has been approved yet, so it can be polled
+	// instead of asking the user to press Enter after approving.
+	Link authLink `json:"link"`
+}
+
+type authLink struct {
+	Href   string `json:"href"`
+	Rel    string `json:"rel"`
+	Method string `json:"method"`
+}
+
+// authStatusResponse is returned by GET onceAuthInfo.Link.Href while polling
+// for photoTAN Push approval.
+type authStatusResponse struct {
+	AuthenticationID string `json:"authenticationId"`
+	Status           string `json:"status"`
 }
 
 // Authenticate runs the full Comdirect OAuth2 + TAN flow and persists the
@@ -84,7 +101,7 @@ func (c *Client) Authenticate(ctx context.Context) error {
 	}
 
 	// Step 4 — user completes the TAN challenge.
-	tan, err := promptTAN(challenge)
+	tan, err := c.promptTAN(ctx, challenge)
 	if err != nil {
 		return fmt.Errorf("read TAN: %w", err)
 	}
@@ -361,10 +378,11 @@ func readLine(prompt string) (string, error) {
 
 // promptTAN guides the user through the TAN challenge, describing what kind
 // of token is expected and adapting to the challenge type Comdirect returned:
-// P_TAN_PUSH is approved in the photoTAN app (no typed value); P_TAN presents
-// a photoTAN graphic that must be decoded before it can be scanned; M_TAN and
-// any unrecognized type fall back to a typed TAN.
-func promptTAN(challenge *onceAuthInfo) (string, error) {
+// P_TAN_PUSH is approved in the photoTAN app and polled for automatically
+// (no typed value); P_TAN presents a photoTAN graphic that must be decoded
+// before it can be scanned; M_TAN and any unrecognized type fall back to a
+// typed TAN.
+func (c *Client) promptTAN(ctx context.Context, challenge *onceAuthInfo) (string, error) {
 	fmt.Printf("TAN required: %s\n", tanTypeLabel(challenge.Typ))
 	if len(challenge.AvailableTypes) > 0 {
 		fmt.Printf("Other TAN methods available on this account: %s\n", strings.Join(challenge.AvailableTypes, ", "))
@@ -372,9 +390,7 @@ func promptTAN(challenge *onceAuthInfo) (string, error) {
 
 	switch challenge.Typ {
 	case "P_TAN_PUSH":
-		fmt.Println("Approve the login in your photoTAN app, then press Enter.")
-		_, err := readLine("")
-		return "", err
+		return "", c.pollPushTAN(ctx, challenge)
 	case "P_TAN":
 		png, err := base64.StdEncoding.DecodeString(challenge.Challenge)
 		if err != nil {
@@ -408,6 +424,55 @@ func promptTAN(challenge *onceAuthInfo) (string, error) {
 			fmt.Printf("Challenge: %s\n", challenge.Challenge)
 		}
 		return readLine("Enter TAN: ")
+	}
+}
+
+// pushTANPollInterval and pushTANPollTimeout match the values used by other
+// Comdirect API clients polling the same status endpoint.
+const (
+	pushTANPollInterval = 3 * time.Second
+	pushTANPollTimeout  = 5 * time.Minute
+)
+
+// pollPushTAN waits for a P_TAN_PUSH challenge to be approved in the user's
+// photoTAN app by polling the status link Comdirect returns alongside the
+// challenge (x-once-authentication-info.link), rather than asking the user
+// to press Enter after approving. If no link is present — some accounts or
+// API versions may not return one — it falls back to that manual prompt.
+func (c *Client) pollPushTAN(ctx context.Context, challenge *onceAuthInfo) error {
+	if challenge.Link.Href == "" {
+		fmt.Println("Approve the login in your photoTAN app, then press Enter.")
+		_, err := readLine("")
+		return err
+	}
+
+	fmt.Println("Waiting for you to approve the login in your photoTAN app...")
+	ctx, cancel := context.WithTimeout(ctx, pushTANPollTimeout)
+	defer cancel()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("timed out waiting for photoTAN Push approval: %w", ctx.Err())
+		case <-time.After(pushTANPollInterval):
+		}
+
+		resp, err := c.sessionRequest(ctx, "GET", challenge.Link.Href, nil, nil)
+		if err != nil {
+			return fmt.Errorf("poll photoTAN status: %w", err)
+		}
+		if err := checkStatus(resp, 200); err != nil {
+			resp.Body.Close()
+			return fmt.Errorf("poll photoTAN status: %w", err)
+		}
+		var status authStatusResponse
+		if err := decodeJSON(resp, &status); err != nil {
+			return fmt.Errorf("poll photoTAN status: %w", err)
+		}
+		if status.Status == "AUTHENTICATED" {
+			fmt.Println("Approved.")
+			return nil
+		}
 	}
 }
 

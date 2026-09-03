@@ -101,7 +101,10 @@ Comdirect uses a non-standard OAuth2 flow on top of standard token endpoints. Th
    → 201 with x-once-authentication-info header containing TAN challenge info
       (challenge type: P_TAN, photoTAN, etc.)
 
-4. User completes TAN challenge (interactive prompt or push notification)
+4. User completes TAN challenge:
+   - P_TAN/M_TAN: typed interactively (photoTAN graphic decoded to a temp file for scanning).
+   - P_TAN_PUSH: no typed value — polled automatically via the status link Comdirect returns
+     in x-once-authentication-info.link (GET every 3s, up to 5 minutes) until "AUTHENTICATED".
 
 5. PATCH /api/session/clients/user_id/v1/sessions/{sessionId}
    x-once-authentication: {"typ":"...","value":"<TAN>"}
