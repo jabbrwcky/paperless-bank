@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -193,7 +194,9 @@ func (c *Client) fetchSessionID(ctx context.Context) error {
 	return nil
 }
 
-// validateSession triggers the TAN challenge and returns its details.
+// validateSession triggers the TAN challenge and returns its details. If
+// cfg.TanType is set, it's sent as the requested challenge type; otherwise
+// Comdirect uses the account's default TAN method.
 // POST /api/session/clients/user/v1/sessions/{id}/validate
 func (c *Client) validateSession(ctx context.Context) (*onceAuthInfo, error) {
 	body, _ := json.Marshal(sessionInfo{
@@ -201,8 +204,14 @@ func (c *Client) validateSession(ctx context.Context) (*onceAuthInfo, error) {
 		SessionTanActive: true,
 		Activated2FA:     true,
 	})
+	var headers map[string]string
+	if c.cfg.TanType != "" {
+		headers = map[string]string{
+			"x-once-authentication-info": fmt.Sprintf(`{"typ":%q}`, c.cfg.TanType),
+		}
+	}
 	path := "/api/session/clients/user/v1/sessions/" + c.sessionID + "/validate"
-	resp, err := c.sessionRequest(ctx, "POST", path, body, nil)
+	resp, err := c.sessionRequest(ctx, "POST", path, body, headers)
 	if err != nil {
 		return nil, err
 	}
@@ -327,24 +336,78 @@ func (c *Client) saveTokenCache() error {
 	return os.WriteFile(path, data, 0o600)
 }
 
-// promptTAN guides the user through the TAN challenge. Push challenges
-// (P_TAN_PUSH) are approved in the photoTAN app and need no typed value.
+// tanTypeLabel describes a Comdirect TAN challenge type in plain language so
+// the user knows what kind of token/action is expected before being prompted.
+func tanTypeLabel(typ string) string {
+	switch typ {
+	case "P_TAN":
+		return "photoTAN — scan the graphic with your photoTAN app/reader"
+	case "P_TAN_PUSH":
+		return "photoTAN Push — approve the login request in your photoTAN app"
+	case "M_TAN":
+		return "mobile TAN — SMS sent to your registered phone number"
+	default:
+		return typ + " (unrecognized type — follow the instructions in your comdirect security app)"
+	}
+}
+
+// readLine prompts on stdout and reads a single trimmed line from stdin.
+func readLine(prompt string) (string, error) {
+	fmt.Print(prompt)
+	r := bufio.NewReader(os.Stdin)
+	line, err := r.ReadString('\n')
+	return strings.TrimSpace(line), err
+}
+
+// promptTAN guides the user through the TAN challenge, describing what kind
+// of token is expected and adapting to the challenge type Comdirect returned:
+// P_TAN_PUSH is approved in the photoTAN app (no typed value); P_TAN presents
+// a photoTAN graphic that must be decoded before it can be scanned; M_TAN and
+// any unrecognized type fall back to a typed TAN.
 func promptTAN(challenge *onceAuthInfo) (string, error) {
+	fmt.Printf("TAN required: %s\n", tanTypeLabel(challenge.Typ))
+	if len(challenge.AvailableTypes) > 0 {
+		fmt.Printf("Other TAN methods available on this account: %s\n", strings.Join(challenge.AvailableTypes, ", "))
+	}
+
 	switch challenge.Typ {
 	case "P_TAN_PUSH":
 		fmt.Println("Approve the login in your photoTAN app, then press Enter.")
-		r := bufio.NewReader(os.Stdin)
-		_, err := r.ReadString('\n')
+		_, err := readLine("")
 		return "", err
-	default:
-		fmt.Printf("TAN challenge type: %s\n", challenge.Typ)
+	case "P_TAN":
+		png, err := base64.StdEncoding.DecodeString(challenge.Challenge)
+		if err != nil {
+			// Fall back to the generic flow if the graphic can't be decoded.
+			if challenge.Challenge != "" {
+				fmt.Printf("Challenge: %s\n", challenge.Challenge)
+			}
+			return readLine("Enter TAN: ")
+		}
+		f, err := os.CreateTemp("", "comdirect-phototan-*.png")
+		if err != nil {
+			return "", fmt.Errorf("write photoTAN graphic: %w", err)
+		}
+		defer os.Remove(f.Name())
+		if _, err := f.Write(png); err != nil {
+			f.Close()
+			return "", fmt.Errorf("write photoTAN graphic: %w", err)
+		}
+		if err := f.Close(); err != nil {
+			return "", fmt.Errorf("write photoTAN graphic: %w", err)
+		}
+		fmt.Printf("photoTAN graphic saved to %s — open it and scan with your photoTAN app/reader.\n", f.Name())
+		return readLine("Enter TAN: ")
+	case "M_TAN":
 		if challenge.Challenge != "" {
 			fmt.Printf("Challenge: %s\n", challenge.Challenge)
 		}
-		fmt.Print("Enter TAN: ")
-		r := bufio.NewReader(os.Stdin)
-		line, err := r.ReadString('\n')
-		return strings.TrimSpace(line), err
+		return readLine("Enter TAN: ")
+	default:
+		if challenge.Challenge != "" {
+			fmt.Printf("Challenge: %s\n", challenge.Challenge)
+		}
+		return readLine("Enter TAN: ")
 	}
 }
 

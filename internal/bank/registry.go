@@ -12,6 +12,10 @@ type Config struct {
 	// TokenCache is the path to the on-disk token cache file.
 	// Supports ~ expansion.
 	TokenCache string
+	// TanType requests a specific TAN challenge type (e.g. "P_TAN",
+	// "P_TAN_PUSH", "M_TAN") instead of the account's default. Empty leaves
+	// the choice to the bank.
+	TanType string
 }
 
 // Factory creates a DocumentSource from the given config.

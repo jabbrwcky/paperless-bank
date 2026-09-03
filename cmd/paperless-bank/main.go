@@ -26,6 +26,7 @@ type ComdirectFlags struct {
 	Username     string `name:"username"      help:"Depot-Kennung"         env:"COMDIRECT_USERNAME"`
 	Password     string `name:"password"      help:"Online-PIN"            env:"COMDIRECT_PASSWORD"`
 	TokenCache   string `name:"token-cache"   help:"Token cache file path" default:"~/.cache/paperless-bank/comdirect-token.json"`
+	TanType      string `name:"tan-type"      help:"Preferred TAN challenge type (P_TAN, P_TAN_PUSH, M_TAN); leave empty for the account default" env:"COMDIRECT_TAN_TYPE"`
 }
 
 // CLI is the root kong command struct.
@@ -48,6 +49,7 @@ func (c *CLI) bankConfig(name string) *bank.Config {
 			Username:     c.Comdirect.Username,
 			Password:     c.Comdirect.Password,
 			TokenCache:   c.Comdirect.TokenCache,
+			TanType:      c.Comdirect.TanType,
 		}
 	}
 	return nil
@@ -64,6 +66,7 @@ func (c *CLI) configuredBanks() map[string]bank.Config {
 			Username:     c.Comdirect.Username,
 			Password:     c.Comdirect.Password,
 			TokenCache:   c.Comdirect.TokenCache,
+			TanType:      c.Comdirect.TanType,
 		}
 	}
 	return out
