@@ -4,6 +4,10 @@
 
 `paperless-bank` is a Go CLI tool that fetches documents from bank inbox/postbox APIs and uploads them to a [paperless-ngx](https://docs.paperless-ngx.com/) instance.
 
+For commit messages use conventional commit format.
+
+Changes should be added via brnahce sand PRs to simplify review and merge.ß
+
 ## Code conventions
 
 - **Go standard library first.** Reach for third-party packages only when the stdlib is genuinely insufficient. Exceptions: `github.com/alecthomas/kong` and its sub-packages for CLI and config file parsing.
