@@ -63,18 +63,24 @@ func (c *Client) ListDocuments(ctx context.Context) ([]bank.Document, error) {
 	return docs, nil
 }
 
-// DownloadDocument fetches the raw bytes of a single document. The endpoint
-// returns the document in its native format (application/pdf or text/html),
-// never JSON, so it must not send the default Accept: application/json.
+// DownloadDocument fetches the raw bytes of doc. Comdirect requires the
+// Accept header to name exactly the document's expected MIME type (a
+// wildcard or multi-value Accept is rejected with 406), so doc.MIMEType
+// (populated by ListDocuments) must be passed through rather than just the
+// ID.
 // GET /api/messages/v2/documents/{documentId}
-func (c *Client) DownloadDocument(ctx context.Context, id string) ([]byte, error) {
+func (c *Client) DownloadDocument(ctx context.Context, doc bank.Document) ([]byte, error) {
 	if err := c.EnsureAuthenticated(ctx); err != nil {
 		return nil, err
 	}
 
-	resp, err := c.do(ctx, "GET", "/api/messages/v2/documents/"+id, "application/pdf, text/html, */*", nil)
+	accept := doc.MIMEType
+	if accept == "" {
+		accept = "application/pdf"
+	}
+	resp, err := c.do(ctx, "GET", "/api/messages/v2/documents/"+doc.ID, accept, nil)
 	if err != nil {
-		return nil, fmt.Errorf("download %s: %w", id, err)
+		return nil, fmt.Errorf("download %s: %w", doc.ID, err)
 	}
 	if err := checkStatus(resp, 200); err != nil {
 		return nil, err

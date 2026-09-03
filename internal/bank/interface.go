@@ -18,7 +18,10 @@ type Document struct {
 // The interface lives here (the consumer), not in the implementing package.
 type DocumentSource interface {
 	ListDocuments(ctx context.Context) ([]Document, error)
-	DownloadDocument(ctx context.Context, id string) ([]byte, error)
+	// DownloadDocument fetches the raw bytes of doc. The full Document (not
+	// just its ID) is required because some banks' download endpoints need
+	// the expected MIME type up front (e.g. via an Accept header).
+	DownloadDocument(ctx context.Context, doc Document) ([]byte, error)
 }
 
 // Authenticator is an optional extension for banks that require an

@@ -50,7 +50,7 @@ func (o *Orchestrator) syncDoc(ctx context.Context, doc bank.Document) error {
 		return nil
 	}
 
-	content, err := o.Source.DownloadDocument(ctx, doc.ID)
+	content, err := o.Source.DownloadDocument(ctx, doc)
 	if err != nil {
 		return fmt.Errorf("download: %w", err)
 	}
