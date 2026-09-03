@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/jabbrwcky/paperless-bank/internal/bank"
+	"github.com/jabbrwcky/paperless-bank/internal/httpx"
 )
 
 const baseURL = "https://api.comdirect.de"
@@ -65,7 +66,7 @@ func (c *Client) do(ctx context.Context, method, path, accept string, body io.Re
 		accept = "application/json"
 	}
 	req.Header.Set("Accept", accept)
-	return c.http.Do(req)
+	return httpx.Do(c.http, req)
 }
 
 // requestInfo returns the JSON value required by Comdirect for x-http-request-info.

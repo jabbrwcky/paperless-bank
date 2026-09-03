@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/jabbrwcky/paperless-bank/internal/bank"
+	"github.com/jabbrwcky/paperless-bank/internal/httpx"
 )
 
 // Client uploads documents to a paperless-ngx instance.
@@ -43,7 +44,7 @@ func (c *Client) DocumentExists(ctx context.Context, filename string) (bool, err
 	}
 	c.setHeaders(req)
 
-	resp, err := c.http.Do(req)
+	resp, err := httpx.Do(c.http, req)
 	if err != nil {
 		return false, fmt.Errorf("check duplicate: %w", err)
 	}
@@ -92,7 +93,7 @@ func (c *Client) Upload(ctx context.Context, doc bank.Document, content []byte) 
 	c.setHeaders(req)
 	req.Header.Set("Content-Type", w.FormDataContentType())
 
-	resp, err := c.http.Do(req)
+	resp, err := httpx.Do(c.http, req)
 	if err != nil {
 		return fmt.Errorf("upload: %w", err)
 	}

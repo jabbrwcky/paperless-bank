@@ -144,5 +144,10 @@ Duplicate detection: query paperless-ngx for existing documents by original file
 ## Error handling
 
 - Auth errors (expired token, TAN required) exit with a clear message directing the user to run `paperless-bank auth <bank>`.
-- Network errors are retried up to 3 times with exponential backoff (stdlib only — no retry library).
+- Network errors and 5xx responses are retried up to 3 times with exponential backoff
+  (`internal/httpx.Do`, stdlib only — no retry library). This wraps the Comdirect document API and
+  the paperless-ngx client; the OAuth2/TAN session flow is deliberately excluded since replaying a
+  TAN validate/activate call isn't safe to retry blindly.
+- HTTP 429 (rate limited) is retried on a separate, longer backoff schedule, honoring a
+  `Retry-After` header when the server sends one.
 - A failed upload for one document does not abort the sync; errors are collected and reported at the end.
