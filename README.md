@@ -110,7 +110,7 @@ before extending or wiring more of the API through it.
 ### Paperless-ngx upload
 
 The upload client (`internal/paperless/client.go`) speaks the paperless-ngx REST API (token auth,
-`POST /api/documents/` multipart). Keep bank logic and paperless logic decoupled — `internal/sync`
+`POST /api/documents/post_document/` multipart). Keep bank logic and paperless logic decoupled — `internal/sync`
 is the only package that touches both.
 
 ## Develop

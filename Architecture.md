@@ -138,7 +138,7 @@ for each configured bank:
   2. Call ListDocuments()
   3. For each document not yet in paperless-ngx:
      a. DownloadDocument()
-     b. POST /api/documents/ to paperless-ngx (multipart, filename preserved)
+     b. POST /api/documents/post_document/ to paperless-ngx (multipart, filename preserved)
   4. Log outcome (uploaded / skipped / error) per document
 ```
 

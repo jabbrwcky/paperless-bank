@@ -64,7 +64,9 @@ func (c *Client) DocumentExists(ctx context.Context, filename string) (bool, err
 	return result.Count > 0, nil
 }
 
-// Upload sends a document to paperless-ngx via POST /api/documents/.
+// Upload sends a document to paperless-ngx via POST /api/documents/post_document/.
+// /api/documents/ itself is read-only (list/retrieve); uploads go through
+// this dedicated action, which queues the document for async consumption.
 func (c *Client) Upload(ctx context.Context, doc bank.Document, content []byte) error {
 	var body bytes.Buffer
 	w := multipart.NewWriter(&body)
@@ -86,7 +88,7 @@ func (c *Client) Upload(ctx context.Context, doc bank.Document, content []byte) 
 	}
 	w.Close()
 
-	req, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+"/api/documents/", &body)
+	req, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+"/api/documents/post_document/", &body)
 	if err != nil {
 		return err
 	}

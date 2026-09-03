@@ -41,7 +41,7 @@ Changes should be added via brnahce sand PRs to simplify review and merge.ß
 
 ## Paperless-ngx upload
 
-The upload client lives in `internal/paperless/`. It speaks the paperless-ngx REST API (token auth, `POST /api/documents/` multipart). Do not couple bank logic to paperless logic — the sync orchestrator in `internal/sync/` is the only place that touches both.
+The upload client lives in `internal/paperless/`. It speaks the paperless-ngx REST API (token auth, `POST /api/documents/post_document/` multipart — `/api/documents/` itself is read-only). Do not couple bank logic to paperless logic — the sync orchestrator in `internal/sync/` is the only place that touches both.
 
 ## CLI shape
 
