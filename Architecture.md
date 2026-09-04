@@ -48,10 +48,45 @@ type Document struct {
 type DocumentSource interface {
     // ListDocuments returns all documents in the inbox/postbox.
     ListDocuments(ctx context.Context) ([]Document, error)
-    // DownloadDocument returns the raw document bytes.
-    DownloadDocument(ctx context.Context, id string) ([]byte, error)
+    // DownloadDocument returns the raw bytes of doc.
+    DownloadDocument(ctx context.Context, doc Document) ([]byte, error)
 }
 ```
+
+### `bank.Authenticator` / `bank.ChallengeHandler` / `bank.TokenChecker`
+
+```go
+// internal/bank/interface.go
+type Challenge struct {
+    Description string // human label, e.g. "photoTAN — scan the graphic..."
+    Image       []byte // optional challenge graphic (e.g. decoded photoTAN PNG)
+    Hint        string // optional hint text (e.g. a masked phone number)
+    NeedsInput  bool   // false for pure notifications (e.g. "approve the push")
+}
+
+// ChallengeHandler lets a bank's Authenticate delegate the interactive part
+// of a challenge to whatever is driving it (CLI prompt, web UI, ...), so
+// bank packages have no direct I/O dependency of their own.
+type ChallengeHandler interface {
+    Handle(ctx context.Context, challenge Challenge) (string, error)
+}
+
+type Authenticator interface {
+    Authenticate(ctx context.Context, handler ChallengeHandler) error
+}
+
+// TokenChecker lets a caller verify/refresh a cached token without user
+// interaction, falling back to Authenticator when that fails.
+type TokenChecker interface {
+    EnsureAuthenticated(ctx context.Context) error
+}
+```
+
+`cmd/paperless-bank/challenge_cli.go` implements `ChallengeHandler` for the terminal (writes a
+challenge graphic to a temp file, prompts on stdin); `internal/server`'s `webChallengeHandler`
+implements it for the browser (serves the graphic over HTTP, blocks on a channel until a form is
+submitted). Neither `comdirect` nor any future bank package touches a terminal or an HTTP response
+directly.
 
 ## CLI commands
 
@@ -60,6 +95,7 @@ type DocumentSource interface {
 | `paperless-bank auth <bank>` | Interactively authenticate and persist token/session |
 | `paperless-bank sync` | Fetch new documents from all configured banks and upload to paperless-ngx |
 | `paperless-bank list` | List available documents without uploading |
+| `paperless-bank serve` | Run `sync` on an interval with a web UI for auth challenges (see **Server mode**) |
 
 ## Configuration
 
@@ -136,12 +172,14 @@ Response documents include `mimeType`, `name`, `dateCreation`.
 for each configured bank:
   1. Load/refresh access token from cache
   2. Call ListDocuments() (Comdirect: follows paging-first/paging-count until all matches fetched)
-  3. For each document:
+  3. Sort documents by date; skip any strictly older than the saved sync watermark (if any)
+  4. For each remaining document:
      a. Skip if its MIME type is not in --mime-types (default: application/pdf only)
      b. Skip if it already exists in paperless-ngx
      c. DownloadDocument()
      d. POST /api/documents/post_document/ to paperless-ngx (multipart, filename preserved)
-  4. Log outcome (uploaded / skipped / error) per document
+  5. Log outcome (uploaded / skipped / error) per document
+  6. Advance the sync watermark to the newest date processed before the first failure (if any)
 ```
 
 Duplicate detection: query paperless-ngx for existing documents by original filename before uploading. If a document with the same filename already exists, skip it.
@@ -149,6 +187,18 @@ Duplicate detection: query paperless-ngx for existing documents by original file
 MIME type filtering exists because paperless-ngx rejects file types it doesn't support (e.g. a
 bank's `text/html` marketing notices mixed into the same inbox as PDF statements) — uploading them
 unfiltered fails the whole document rather than just that one item.
+
+**Sync watermark** (`internal/sync/watermark.go`, `Orchestrator.WatermarkPath`, default
+`~/.cache/paperless-bank/<bank>-sync-state.json`): bank document-list APIs generally have no
+server-side date filter, so without this every run re-lists and re-checks a bank's *entire*
+history against paperless-ngx forever, growing more wasteful every year. After a run, the
+orchestrator persists the newest document date it fully accounted for; the next run skips
+documents strictly older than that watermark before even calling `DocumentExists`. The watermark
+only advances up to the last document processed before the first failure in date order, so a
+transient failure (and everything from that point on) is still reconsidered next run — it's purely
+a performance optimization, not a correctness mechanism: `DocumentExists`'s filename check remains
+the actual duplicate-prevention safety net, since bank document dates carry no time-of-day and
+same-day documents are never skipped this way.
 
 ## Error handling
 
@@ -160,3 +210,46 @@ unfiltered fails the whole document rather than just that one item.
 - HTTP 429 (rate limited) is retried on a separate, longer backoff schedule, honoring a
   `Retry-After` header when the server sends one.
 - A failed upload for one document does not abort the sync; errors are collected and reported at the end.
+
+## Server mode
+
+`internal/server.Server` (`paperless-bank serve`) reuses `sync.Orchestrator`, running it
+immediately on startup and then on every `--sync-interval` tick, alongside a minimal `net/http`
+web UI (no router/templating dependency — just `http.ServeMux`'s Go 1.22+ method/wildcard patterns
+and inline `html/template` strings):
+
+```
+GET  /                        status page: per bank, last/next run and outcome, or a link to
+                               /auth/{bank} if a challenge is pending
+GET  /auth/{bank}             renders the pending challenge (graphic/hint/form as needed)
+POST /auth/{bank}             submits a typed value, delivered to the blocked ChallengeHandler
+GET  /auth/{bank}/image.png   serves the pending challenge's graphic, if any
+```
+
+All state (per-bank last-run outcome, pending challenges) is in-memory only and does not survive a
+restart — no persistent database is introduced. Sync watermarks (see **Sync flow**) are the one
+piece of state that does persist to disk, exactly like the token cache.
+
+**Auth flow:** `Server.ensureBankAuthenticated` calls the bank's `TokenChecker.EnsureAuthenticated`.
+If that fails:
+- By default, it just returns an error ("action required") without attempting a login — the
+  operator must run `paperless-bank auth <bank>` themselves.
+- With `--auto-reauth`, it instead calls `Authenticator.Authenticate` with a `webChallengeHandler`
+  bound to that bank, so the challenge (and, for a typed TAN, the submitted value) flows through
+  `/auth/{bank}` instead of a terminal.
+
+Two independent loops call `ensureBankAuthenticated` per bank, serialized by a per-bank mutex
+(`bankState.authMu`) so they can never race to refresh the same token concurrently (Comdirect
+rotates the refresh token on each use, so a concurrent double-refresh would fail one of the two
+callers):
+- The sync loop, right before each `--sync-interval` tick's sync.
+- A separate **token keep-alive loop** (`tokenRefreshInterval`, currently 5 minutes, independent of
+  `--sync-interval`) that exists specifically so a long sync interval — or a sync tick that keeps
+  failing for unrelated reasons — doesn't leave a refreshable token to go stale between syncs.
+
+`--auto-reauth` defaults to **off**. A live `Authenticate` call is a real side effect — it can send
+the account holder an actual SMS/push TAN — and it's easy to trigger unintentionally if real
+credentials happen to be available in the process environment (e.g. via `.envrc`/direnv). This
+happened once during this feature's own development: an unrelated test invocation of `serve`
+inherited real Comdirect credentials from the shell environment and triggered a live SMS TAN.
+`--auto-reauth` exists specifically so that a live login is always an explicit choice.

@@ -54,9 +54,17 @@
 
 ---
 
+## v2 — Server mode
+
+- [x] `internal/server/` — sync-on-interval loop + minimal web UI for bank auth challenges
+- [x] `serve` CLI command (`--listen`, `--sync-interval`, `--auto-reauth`)
+- [x] Proactive token keep-alive loop, independent of `--sync-interval`
+- [x] Sync watermark so recurring runs don't re-check years of already-synced history
+- [ ] A way to be notified that a bank needs attention without polling the status page
+      (e.g. a webhook/email hook when a challenge becomes pending)
+
 ## Future (out of scope for v1)
 
 - Document classification / auto-tagging based on content or sender
 - Additional bank integrations (DKB, ING, Sparkasse, …)
-- Scheduled / daemon mode (run on interval without external cron)
 - paperless-ngx correspondent and document-type mapping from bank metadata

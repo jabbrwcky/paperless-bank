@@ -65,6 +65,10 @@ paperless-bank list
 
 # Fetch new documents from every configured bank and upload them to paperless-ngx.
 paperless-bank sync
+
+# Run continuously: sync on an interval, plus a web UI at the --listen address
+# for completing an auth challenge when no terminal is attached.
+paperless-bank serve --sync-interval 1h
 ```
 
 `auth` walks you through comdirect's TAN challenge (photoTAN scan, photoTAN push, or mobile/SMS
@@ -79,14 +83,39 @@ Documents of any other type are skipped, not treated as errors. `sync` also skip
 already exist in paperless-ngx (matched by original filename), so it's safe to re-run on a
 schedule without creating duplicates.
 
+Every run also saves a per-bank sync watermark (`~/.cache/paperless-bank/<bank>-sync-state.json`,
+alongside the token cache) recording the newest document date it fully accounted for. Later runs
+skip documents strictly older than that watermark before even checking paperless-ngx for them —
+without it, every run would re-list and re-check a bank's entire history, which only gets more
+wasteful as years of statements pile up. This is purely a performance optimization; the
+filename-based duplicate check above remains the actual safety net, so it's safe even if a
+watermark file is stale, corrupted, or deleted.
+
+`serve` binds to `127.0.0.1:8080` by default (`--listen` to change it) and has no built-in
+login — if you expose it beyond localhost, put it behind your own authenticating reverse proxy,
+the same way you'd typically deploy paperless-ngx itself. It also proactively refreshes each
+bank's token every 5 minutes (independent of `--sync-interval`), so a long sync interval doesn't
+leave a refreshable token to go stale between runs. By default, if a bank's cached token is
+invalid or expired anyway (e.g. the refresh token itself has expired), `serve` just marks it
+"action required" on the status page and waits for you to run `paperless-bank auth <bank>` — it
+does **not** attempt a live login on its own. Pass `--auto-reauth` to have it instead start that
+login itself and surface the resulting challenge at `/auth/<bank>` in the browser. Only enable
+this if you're comfortable with `serve` being able to trigger a real bank login (and a real
+SMS/push TAN to your phone) automatically — this is an explicit opt-in specifically because it's
+easy to trigger unintentionally if real credentials are sitting in the environment (e.g. via
+`.envrc`/direnv) when `serve` starts.
+
 ## Extend
 
 ### Add a bank
 
 1. Create `internal/bank/<bankname>/` implementing `bank.DocumentSource`
    (`internal/bank/interface.go`) with, at minimum:
-   - `auth.go` — OAuth2/session acquisition (implement `bank.Authenticator` too if login is
-     interactive)
+   - `auth.go` — OAuth2/session acquisition. If login is interactive, implement
+     `bank.Authenticator` and drive the interactive step through the `bank.ChallengeHandler`
+     passed into `Authenticate`, and implement `bank.TokenChecker` so callers (including `serve`)
+     can check/refresh a cached token without user interaction. Never read/write a terminal
+     directly from this package — that's what `ChallengeHandler` is for.
    - `client.go` — authenticated HTTP client
    - `documents.go` — `ListDocuments`/`DownloadDocument`
 2. Register it in `internal/bank/registry.go` via `bank.Register("<bankname>", ...)` in an
@@ -136,7 +165,8 @@ and the project's definition of done.
 ## Out of scope (v1)
 
 - Document classification or tagging beyond filename/metadata from the bank
-- Multi-user or server mode
-- A persistent database (state is tracked via paperless-ngx itself)
+- Multi-user (single set of bank/paperless-ngx credentials only)
+- A persistent database (state is tracked via paperless-ngx itself; `serve`'s own status/challenge
+  state is in-memory only and does not survive a restart)
 
 See [TODO.md](TODO.md) for planned work.
