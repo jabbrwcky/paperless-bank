@@ -34,9 +34,10 @@ type CLI struct {
 	Paperless PaperlessFlags `embed:"" prefix:"paperless-"`
 	Comdirect ComdirectFlags `embed:"" prefix:"comdirect-"`
 
-	Auth AuthCmd `cmd:"" help:"Authenticate with a bank and cache credentials"`
-	Sync SyncCmd `cmd:"" help:"Sync new documents from configured banks to paperless-ngx"`
-	List ListCmd `cmd:"" help:"List available documents without uploading"`
+	Auth  AuthCmd  `cmd:"" help:"Authenticate with a bank and cache credentials"`
+	Sync  SyncCmd  `cmd:"" help:"Sync new documents from configured banks to paperless-ngx"`
+	List  ListCmd  `cmd:"" help:"List available documents without uploading"`
+	Serve ServeCmd `cmd:"" help:"Run as a long-lived server with a web UI for handling bank authentication"`
 }
 
 // bankConfig returns the bank.Config for the named bank, or nil if not recognised.

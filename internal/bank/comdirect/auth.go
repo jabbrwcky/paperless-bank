@@ -1,7 +1,6 @@
 package comdirect
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -14,6 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/jabbrwcky/paperless-bank/internal/bank"
 )
 
 type tokenCache struct {
@@ -67,7 +68,9 @@ type authStatusResponse struct {
 
 // Authenticate runs the full Comdirect OAuth2 + TAN flow and persists the
 // resulting tokens to the configured cache file. See Architecture.md §Comdirect.
-func (c *Client) Authenticate(ctx context.Context) error {
+// handler drives the interactive TAN step so this package has no direct
+// dependency on any particular UI (CLI prompt, web form, ...).
+func (c *Client) Authenticate(ctx context.Context, handler bank.ChallengeHandler) error {
 	if c.cfg.ClientID == "" || c.cfg.ClientSecret == "" {
 		return fmt.Errorf("comdirect: client ID and secret are required (set COMDIRECT_CLIENT_ID / COMDIRECT_CLIENT_SECRET)")
 	}
@@ -101,7 +104,7 @@ func (c *Client) Authenticate(ctx context.Context) error {
 	}
 
 	// Step 4 — user completes the TAN challenge.
-	tan, err := c.promptTAN(ctx, challenge)
+	tan, err := c.promptTAN(ctx, handler, challenge)
 	if err != nil {
 		return fmt.Errorf("read TAN: %w", err)
 	}
@@ -368,85 +371,80 @@ func tanTypeLabel(typ string) string {
 	}
 }
 
-// readLine prompts on stdout and reads a single trimmed line from stdin.
-func readLine(prompt string) (string, error) {
-	fmt.Print(prompt)
-	r := bufio.NewReader(os.Stdin)
-	line, err := r.ReadString('\n')
-	return strings.TrimSpace(line), err
+// challengeDescription builds the human-readable label passed to the
+// ChallengeHandler, describing what kind of token is expected and any other
+// TAN methods available on the account.
+func challengeDescription(challenge *onceAuthInfo) string {
+	desc := tanTypeLabel(challenge.Typ)
+	if len(challenge.AvailableTypes) > 0 {
+		desc += fmt.Sprintf(" (other methods available on this account: %s)", strings.Join(challenge.AvailableTypes, ", "))
+	}
+	return desc
 }
 
-// promptTAN guides the user through the TAN challenge, describing what kind
-// of token is expected and adapting to the challenge type Comdirect returned:
-// P_TAN_PUSH is approved in the photoTAN app and polled for automatically
-// (no typed value); P_TAN presents a photoTAN graphic that must be decoded
-// before it can be scanned; M_TAN and any unrecognized type fall back to a
-// typed TAN.
-func (c *Client) promptTAN(ctx context.Context, challenge *onceAuthInfo) (string, error) {
-	fmt.Printf("TAN required: %s\n", tanTypeLabel(challenge.Typ))
-	if len(challenge.AvailableTypes) > 0 {
-		fmt.Printf("Other TAN methods available on this account: %s\n", strings.Join(challenge.AvailableTypes, ", "))
-	}
-
+// promptTAN adapts to the challenge type Comdirect returned and delegates
+// the interactive part to handler: P_TAN_PUSH is approved in the photoTAN
+// app and polled for automatically (no typed value); P_TAN presents a
+// photoTAN graphic that must be decoded before it can be scanned; M_TAN and
+// any unrecognized type fall back to a typed TAN.
+func (c *Client) promptTAN(ctx context.Context, handler bank.ChallengeHandler, challenge *onceAuthInfo) (string, error) {
 	switch challenge.Typ {
 	case "P_TAN_PUSH":
-		return "", c.pollPushTAN(ctx, challenge)
+		return "", c.pollPushTAN(ctx, handler, challenge)
 	case "P_TAN":
-		png, err := base64.StdEncoding.DecodeString(challenge.Challenge)
+		image, err := base64.StdEncoding.DecodeString(challenge.Challenge)
+		hint := ""
 		if err != nil {
-			// Fall back to the generic flow if the graphic can't be decoded.
-			if challenge.Challenge != "" {
-				fmt.Printf("Challenge: %s\n", challenge.Challenge)
-			}
-			return readLine("Enter TAN: ")
+			// Fall back to a plain typed prompt if the graphic can't be decoded.
+			image = nil
+			hint = challenge.Challenge
 		}
-		f, err := os.CreateTemp("", "comdirect-phototan-*.png")
-		if err != nil {
-			return "", fmt.Errorf("write photoTAN graphic: %w", err)
-		}
-		defer os.Remove(f.Name())
-		if _, err := f.Write(png); err != nil {
-			f.Close()
-			return "", fmt.Errorf("write photoTAN graphic: %w", err)
-		}
-		if err := f.Close(); err != nil {
-			return "", fmt.Errorf("write photoTAN graphic: %w", err)
-		}
-		fmt.Printf("photoTAN graphic saved to %s — open it and scan with your photoTAN app/reader.\n", f.Name())
-		return readLine("Enter TAN: ")
-	case "M_TAN":
-		if challenge.Challenge != "" {
-			fmt.Printf("Challenge: %s\n", challenge.Challenge)
-		}
-		return readLine("Enter TAN: ")
-	default:
-		if challenge.Challenge != "" {
-			fmt.Printf("Challenge: %s\n", challenge.Challenge)
-		}
-		return readLine("Enter TAN: ")
+		return handler.Handle(ctx, bank.Challenge{
+			Description: challengeDescription(challenge),
+			Image:       image,
+			Hint:        hint,
+			NeedsInput:  true,
+		})
+	default: // M_TAN and any unrecognized type
+		return handler.Handle(ctx, bank.Challenge{
+			Description: challengeDescription(challenge),
+			Hint:        challenge.Challenge,
+			NeedsInput:  true,
+		})
 	}
 }
 
 // pushTANPollInterval and pushTANPollTimeout match the values used by other
-// Comdirect API clients polling the same status endpoint.
-const (
+// Comdirect API clients polling the same status endpoint. Tests override
+// them to avoid real-time waits.
+var (
 	pushTANPollInterval = 3 * time.Second
 	pushTANPollTimeout  = 5 * time.Minute
 )
 
 // pollPushTAN waits for a P_TAN_PUSH challenge to be approved in the user's
 // photoTAN app by polling the status link Comdirect returns alongside the
-// challenge (x-once-authentication-info.link), rather than asking the user
-// to press Enter after approving. If no link is present — some accounts or
-// API versions may not return one — it falls back to that manual prompt.
-func (c *Client) pollPushTAN(ctx context.Context, challenge *onceAuthInfo) error {
+// challenge (x-once-authentication-info.link) rather than blocking on a
+// manual confirmation. If no link is present — some accounts or API
+// versions may not return one — it falls back to asking handler for a
+// manual confirmation instead, so this never turns into an unbounded
+// blocking read when driven by a UI other than a terminal.
+func (c *Client) pollPushTAN(ctx context.Context, handler bank.ChallengeHandler, challenge *onceAuthInfo) error {
 	if challenge.Link.Href == "" {
-		fmt.Println("Approve the login in your photoTAN app, then press Enter.")
-		_, err := readLine("")
+		_, err := handler.Handle(ctx, bank.Challenge{
+			Description: "Approve the login in your photoTAN app, then confirm.",
+			NeedsInput:  true,
+		})
 		return err
 	}
 
-	fmt.Println("Waiting for you to approve the login in your photoTAN app...")
+	if _, err := handler.Handle(ctx, bank.Challenge{
+		Description: "Waiting for you to approve the login in your photoTAN app...",
+		NeedsInput:  false,
+	}); err != nil {
+		return err
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, pushTANPollTimeout)
 	defer cancel()
 
@@ -470,7 +468,6 @@ func (c *Client) pollPushTAN(ctx context.Context, challenge *onceAuthInfo) error
 			return fmt.Errorf("poll photoTAN status: %w", err)
 		}
 		if status.Status == "AUTHENTICATED" {
-			fmt.Println("Approved.")
 			return nil
 		}
 	}

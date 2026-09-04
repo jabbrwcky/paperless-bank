@@ -28,5 +28,5 @@ func (a *AuthCmd) Run(cli *CLI) error {
 		return fmt.Errorf("%s does not support interactive authentication", a.Bank)
 	}
 
-	return auth.Authenticate(context.Background())
+	return auth.Authenticate(context.Background(), cliChallengeHandler{})
 }
