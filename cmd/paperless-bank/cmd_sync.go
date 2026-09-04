@@ -35,7 +35,12 @@ func (s *SyncCmd) Run(cli *CLI) error {
 		if err != nil {
 			return err
 		}
-		orch := &sync.Orchestrator{Source: src, Paperless: client, AllowedMIMETypes: s.MimeTypes}
+		orch := &sync.Orchestrator{
+			Source:           src,
+			Paperless:        client,
+			AllowedMIMETypes: s.MimeTypes,
+			WatermarkPath:    sync.DefaultWatermarkPath(name),
+		}
 		if err := orch.Run(ctx); err != nil && firstErr == nil {
 			firstErr = err
 		}
