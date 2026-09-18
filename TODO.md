@@ -39,7 +39,7 @@
 
 - [x] `client.go` — token auth, `POST /api/documents/post_document/` multipart upload
 - [x] `client.go` — query existing documents by original filename (duplicate check)
-- [ ] Unit tests with `httptest`
+- [x] Unit tests with `httptest` (`client_test.go`)
 
 ### Sync orchestrator (`internal/sync/`)
 
