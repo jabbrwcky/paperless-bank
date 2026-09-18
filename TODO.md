@@ -4,53 +4,60 @@
 
 ### Project scaffold
 
-- [ ] `go mod init github.com/jabbrwcky/paperless-bank`
-- [ ] Add `github.com/alecthomas/kong` dependency
-- [ ] Basic `cmd/paperless-bank/main.go` with kong wiring and `--config` flag
+- [x] `go mod init github.com/jabbrwcky/paperless-bank`
+- [x] Add `github.com/alecthomas/kong` dependency
+- [x] Basic `cmd/paperless-bank/main.go` with kong wiring and YAML config file support
 
 ### Configuration
 
-- [ ] Define config structs in `internal/config/config.go` (PaperlessConfig, ComdirectConfig)
-- [ ] Wire config file loading via kong's `kong.Configuration(kong.JSON, ...)` or YAML provider
-- [ ] Token cache file path (per-bank, configurable)
+- [x] Config fields live as kong-tagged structs in `cmd/paperless-bank/main.go`
+      (`PaperlessFlags`, `ComdirectFlags`) — not a separate `internal/config` package as
+      originally sketched here
+- [x] Config file loading via `kong-yaml` (default `~/.config/paperless-bank/config.yaml`,
+      override with `PAPERLESS_BANK_CONFIG`)
+- [x] Token cache file path (per-bank, configurable via `--comdirect-token-cache`)
 
 ### Bank interface
 
-- [ ] Define `Document` struct and `DocumentSource` interface in `internal/bank/interface.go`
-- [ ] Bank registry in `internal/bank/registry.go` (maps name → factory)
+- [x] `Document`, `DocumentSource`, `Authenticator`, `ChallengeHandler`, `TokenChecker` in
+      `internal/bank/interface.go`
+- [x] Bank registry in `internal/bank/registry.go` (maps name → factory)
 
 ### Comdirect integration (`internal/bank/comdirect/`)
 
-- [x] `auth.go` — full 6-step OAuth2 + TAN flow (see Architecture.md)
+- [x] `auth.go` — full 6-step OAuth2 + TAN flow (see Architecture.md), all TAN types (P_TAN,
+      P_TAN_PUSH with status polling, M_TAN), driven by `bank.ChallengeHandler`
 - [x] `auth.go` — token cache read/write (JSON file)
 - [x] `auth.go` — automatic token refresh before expiry
 - [x] `client.go` — authenticated HTTP client with `x-http-request-info` header injection
 - [x] `documents.go` — `ListDocuments` with pagination
-- [ ] `documents.go` — `DownloadDocument`
-- [ ] Unit tests with `httptest` for auth and document endpoints
+- [x] `documents.go` — `DownloadDocument`
+- [x] Unit tests with `httptest` for auth and document endpoints (`auth_test.go`,
+      `documents_test.go`)
 
 ### paperless-ngx client (`internal/paperless/`)
 
-- [ ] `client.go` — token auth, `POST /api/documents/` multipart upload
-- [ ] `client.go` — query existing documents by original filename (duplicate check)
+- [x] `client.go` — token auth, `POST /api/documents/post_document/` multipart upload
+- [x] `client.go` — query existing documents by original filename (duplicate check)
 - [ ] Unit tests with `httptest`
 
 ### Sync orchestrator (`internal/sync/`)
 
-- [ ] `sync.go` — fetch → deduplicate → upload loop
-- [ ] Per-document error collection; summary report at end
-- [ ] 3-attempt retry with exponential backoff for transient network errors
+- [x] `sync.go` — fetch → filter (MIME type, sync watermark) → deduplicate → upload loop
+- [x] Per-document error collection; summary report at end
+- [x] 3-attempt retry with exponential backoff for transient network errors (`internal/httpx`)
 
 ### CLI commands
 
-- [ ] `auth` command — interactive TAN prompt, writes token cache
-- [ ] `sync` command — runs orchestrator for all configured banks
-- [ ] `list` command — prints document list to stdout (no upload)
+- [x] `auth` command — interactive TAN prompt, writes token cache
+- [x] `sync` command — runs orchestrator for all configured banks
+- [x] `list` command — prints document list to stdout (no upload)
+- [x] `serve` command — see **v2 — Server mode** below
 
 ### Packaging
 
-- [ ] `Makefile` with `build`, `test`, `vet` targets
-- [ ] `.gitignore` (binaries, token cache files, `*.env`)
+- [x] `Makefile` with `build`, `test`, `vet`, `generate`, `clean` targets
+- [x] `.gitignore` (binaries, token cache files, `*.env`)
 
 ---
 
