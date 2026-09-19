@@ -33,7 +33,7 @@ type VisaCardImage struct {
 }
 
 // Validate validates this visa card image
-func (m *VisaCardImage) Validate(formats strfmt.Registry) error {
+func (m *VisaCardImage) Validate(_ strfmt.Registry) error {
 	return nil
 }
 

@@ -26,7 +26,7 @@ type Rating struct {
 }
 
 // Validate validates this rating
-func (m *Rating) Validate(formats strfmt.Registry) error {
+func (m *Rating) Validate(_ strfmt.Registry) error {
 	return nil
 }
 

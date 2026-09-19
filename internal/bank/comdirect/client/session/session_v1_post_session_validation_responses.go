@@ -49,11 +49,9 @@ func NewSessionV1PostSessionValidationOK() *SessionV1PostSessionValidationOK {
 	return &SessionV1PostSessionValidationOK{}
 }
 
-/*
-SessionV1PostSessionValidationOK describes a response with status code 200, with default header values.
-
-successful operation
-*/
+// SessionV1PostSessionValidationOK describes a response with status code 200, with default header values.
+//
+// successful operation
 type SessionV1PostSessionValidationOK struct {
 	Payload *models.Session
 }
@@ -119,11 +117,9 @@ func NewSessionV1PostSessionValidationUnprocessableEntity() *SessionV1PostSessio
 	return &SessionV1PostSessionValidationUnprocessableEntity{}
 }
 
-/*
-SessionV1PostSessionValidationUnprocessableEntity describes a response with status code 422, with default header values.
-
-Unprocessable Entity
-*/
+// SessionV1PostSessionValidationUnprocessableEntity describes a response with status code 422, with default header values.
+//
+// Unprocessable Entity
 type SessionV1PostSessionValidationUnprocessableEntity struct {
 }
 
@@ -175,11 +171,9 @@ func NewSessionV1PostSessionValidationInternalServerError() *SessionV1PostSessio
 	return &SessionV1PostSessionValidationInternalServerError{}
 }
 
-/*
-SessionV1PostSessionValidationInternalServerError describes a response with status code 500, with default header values.
-
-Internal Server Error
-*/
+// SessionV1PostSessionValidationInternalServerError describes a response with status code 500, with default header values.
+//
+// Internal Server Error
 type SessionV1PostSessionValidationInternalServerError struct {
 }
 

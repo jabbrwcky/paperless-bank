@@ -49,11 +49,9 @@ func NewSessionV1PatchSessionOK() *SessionV1PatchSessionOK {
 	return &SessionV1PatchSessionOK{}
 }
 
-/*
-SessionV1PatchSessionOK describes a response with status code 200, with default header values.
-
-successful operation
-*/
+// SessionV1PatchSessionOK describes a response with status code 200, with default header values.
+//
+// successful operation
 type SessionV1PatchSessionOK struct {
 	Payload *models.Session
 }
@@ -119,11 +117,9 @@ func NewSessionV1PatchSessionUnprocessableEntity() *SessionV1PatchSessionUnproce
 	return &SessionV1PatchSessionUnprocessableEntity{}
 }
 
-/*
-SessionV1PatchSessionUnprocessableEntity describes a response with status code 422, with default header values.
-
-Unprocessable Entity
-*/
+// SessionV1PatchSessionUnprocessableEntity describes a response with status code 422, with default header values.
+//
+// Unprocessable Entity
 type SessionV1PatchSessionUnprocessableEntity struct {
 }
 
@@ -175,11 +171,9 @@ func NewSessionV1PatchSessionInternalServerError() *SessionV1PatchSessionInterna
 	return &SessionV1PatchSessionInternalServerError{}
 }
 
-/*
-SessionV1PatchSessionInternalServerError describes a response with status code 500, with default header values.
-
-Internal Server Error
-*/
+// SessionV1PatchSessionInternalServerError describes a response with status code 500, with default header values.
+//
+// Internal Server Error
 type SessionV1PatchSessionInternalServerError struct {
 }
 

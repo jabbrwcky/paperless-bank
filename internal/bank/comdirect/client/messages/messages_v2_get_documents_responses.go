@@ -55,11 +55,9 @@ func NewMessagesV2GetDocumentsOK() *MessagesV2GetDocumentsOK {
 	return &MessagesV2GetDocumentsOK{}
 }
 
-/*
-MessagesV2GetDocumentsOK describes a response with status code 200, with default header values.
-
-successful operation
-*/
+// MessagesV2GetDocumentsOK describes a response with status code 200, with default header values.
+//
+// successful operation
 type MessagesV2GetDocumentsOK struct {
 	Payload *models.ListResourceDocument
 }
@@ -125,11 +123,9 @@ func NewMessagesV2GetDocumentsNotFound() *MessagesV2GetDocumentsNotFound {
 	return &MessagesV2GetDocumentsNotFound{}
 }
 
-/*
-MessagesV2GetDocumentsNotFound describes a response with status code 404, with default header values.
-
-Not Found
-*/
+// MessagesV2GetDocumentsNotFound describes a response with status code 404, with default header values.
+//
+// Not Found
 type MessagesV2GetDocumentsNotFound struct {
 }
 
@@ -181,11 +177,9 @@ func NewMessagesV2GetDocumentsUnprocessableEntity() *MessagesV2GetDocumentsUnpro
 	return &MessagesV2GetDocumentsUnprocessableEntity{}
 }
 
-/*
-MessagesV2GetDocumentsUnprocessableEntity describes a response with status code 422, with default header values.
-
-Unprocessable Entity
-*/
+// MessagesV2GetDocumentsUnprocessableEntity describes a response with status code 422, with default header values.
+//
+// Unprocessable Entity
 type MessagesV2GetDocumentsUnprocessableEntity struct {
 	Payload *models.StandardErrorResponse
 }
@@ -251,11 +245,9 @@ func NewMessagesV2GetDocumentsInternalServerError() *MessagesV2GetDocumentsInter
 	return &MessagesV2GetDocumentsInternalServerError{}
 }
 
-/*
-MessagesV2GetDocumentsInternalServerError describes a response with status code 500, with default header values.
-
-Internal Server Error
-*/
+// MessagesV2GetDocumentsInternalServerError describes a response with status code 500, with default header values.
+//
+// Internal Server Error
 type MessagesV2GetDocumentsInternalServerError struct {
 }
 

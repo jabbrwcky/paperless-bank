@@ -50,7 +50,7 @@ func (m *TimestampString) validateTimestamp(formats strfmt.Registry) error {
 }
 
 // ContextValidate validates this timestamp string based on context it is used
-func (m *TimestampString) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *TimestampString) ContextValidate(_ context.Context, _ strfmt.Registry) error {
 	return nil
 }
 

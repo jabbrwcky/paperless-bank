@@ -62,10 +62,9 @@ MessagesV2GetPredocumentParams contains all the parameters to send to the API en
 */
 type MessagesV2GetPredocumentParams struct {
 
-	/* DocumentID.
-
-	   The unique ID of the document.
-	*/
+	// DocumentID.
+	//
+	// The unique ID of the document.
 	DocumentID string
 
 	HTTPClient *http.Client

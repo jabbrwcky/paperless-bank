@@ -142,7 +142,7 @@ func (m *BusinessMessage) validateSeverity(formats strfmt.Registry) error {
 }
 
 // ContextValidate validates this business message based on context it is used
-func (m *BusinessMessage) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *BusinessMessage) ContextValidate(_ context.Context, _ strfmt.Registry) error {
 	return nil
 }
 

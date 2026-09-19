@@ -55,11 +55,9 @@ func NewMessagesV2GetPredocumentNotFound() *MessagesV2GetPredocumentNotFound {
 	return &MessagesV2GetPredocumentNotFound{}
 }
 
-/*
-MessagesV2GetPredocumentNotFound describes a response with status code 404, with default header values.
-
-Not Found
-*/
+// MessagesV2GetPredocumentNotFound describes a response with status code 404, with default header values.
+//
+// Not Found
 type MessagesV2GetPredocumentNotFound struct {
 }
 
@@ -111,11 +109,9 @@ func NewMessagesV2GetPredocumentUnprocessableEntity() *MessagesV2GetPredocumentU
 	return &MessagesV2GetPredocumentUnprocessableEntity{}
 }
 
-/*
-MessagesV2GetPredocumentUnprocessableEntity describes a response with status code 422, with default header values.
-
-Unprocessable Entity
-*/
+// MessagesV2GetPredocumentUnprocessableEntity describes a response with status code 422, with default header values.
+//
+// Unprocessable Entity
 type MessagesV2GetPredocumentUnprocessableEntity struct {
 	Payload *models.StandardErrorResponse
 }
@@ -181,11 +177,9 @@ func NewMessagesV2GetPredocumentInternalServerError() *MessagesV2GetPredocumentI
 	return &MessagesV2GetPredocumentInternalServerError{}
 }
 
-/*
-MessagesV2GetPredocumentInternalServerError describes a response with status code 500, with default header values.
-
-Internal Server Error
-*/
+// MessagesV2GetPredocumentInternalServerError describes a response with status code 500, with default header values.
+//
+// Internal Server Error
 type MessagesV2GetPredocumentInternalServerError struct {
 }
 
@@ -237,11 +231,9 @@ func NewMessagesV2GetPredocumentServiceUnavailable() *MessagesV2GetPredocumentSe
 	return &MessagesV2GetPredocumentServiceUnavailable{}
 }
 
-/*
-MessagesV2GetPredocumentServiceUnavailable describes a response with status code 503, with default header values.
-
-Service Unavailable
-*/
+// MessagesV2GetPredocumentServiceUnavailable describes a response with status code 503, with default header values.
+//
+// Service Unavailable
 type MessagesV2GetPredocumentServiceUnavailable struct {
 }
 

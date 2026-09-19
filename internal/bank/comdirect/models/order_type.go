@@ -26,7 +26,7 @@ type OrderType struct {
 }
 
 // Validate validates this order type
-func (m *OrderType) Validate(formats strfmt.Registry) error {
+func (m *OrderType) Validate(_ strfmt.Registry) error {
 	return nil
 }
 
