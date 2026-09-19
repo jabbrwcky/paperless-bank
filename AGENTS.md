@@ -16,6 +16,7 @@ Changes should be added via brnahce sand PRs to simplify review and merge.ß
 - Error handling: wrap errors with `fmt.Errorf("context: %w", err)`. No `panic` outside of `main` init.
 - No global state. Pass dependencies explicitly via structs.
 - Interfaces belong in the package that **uses** them, not the package that implements them.
+- Use go worktree for changes and pull requests for new features and fixes 
 - Tests live alongside the code they test (`foo_test.go` in the same package or `foo_test` package for black-box tests). Use `net/http/httptest` for HTTP mocking — no test-double libraries.
 
 ### Definition of Done
