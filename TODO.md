@@ -53,6 +53,7 @@
 - [x] `sync` command — runs orchestrator for all configured banks
 - [x] `list` command — prints document list to stdout (no upload)
 - [x] `serve` command — see **v2 — Server mode** below
+- [x] `completion` command — prints a bash/zsh/fish completion script via `github.com/miekg/king`
 
 ### Packaging
 

@@ -69,6 +69,9 @@ paperless-bank sync
 # Run continuously: sync on an interval, plus a web UI at the --listen address
 # for completing an auth challenge when no terminal is attached.
 paperless-bank serve --sync-interval 1h
+
+# Print a shell completion script (bash, zsh, or fish).
+paperless-bank completion bash > /etc/bash_completion.d/paperless-bank
 ```
 
 `auth` walks you through comdirect's TAN challenge (photoTAN scan, photoTAN push, or mobile/SMS
