@@ -86,7 +86,7 @@ func (c *Client) Upload(ctx context.Context, doc bank.Document, content []byte) 
 			return err
 		}
 	}
-	w.Close()
+	_ = w.Close()
 
 	req, err := http.NewRequestWithContext(ctx, "POST", c.baseURL+"/api/documents/post_document/", &body)
 	if err != nil {

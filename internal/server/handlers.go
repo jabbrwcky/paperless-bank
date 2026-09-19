@@ -145,5 +145,5 @@ func (s *Server) handleAuthImage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "image/png")
-	w.Write(challenge.Image)
+	_, _ = w.Write(challenge.Image)
 }

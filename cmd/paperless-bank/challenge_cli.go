@@ -29,7 +29,7 @@ func (cliChallengeHandler) Handle(ctx context.Context, challenge bank.Challenge)
 		}
 		defer os.Remove(f.Name())
 		if _, err := f.Write(challenge.Image); err != nil {
-			f.Close()
+			_ = f.Close()
 			return "", fmt.Errorf("write challenge graphic: %w", err)
 		}
 		if err := f.Close(); err != nil {
