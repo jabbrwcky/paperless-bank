@@ -238,7 +238,7 @@ func (c *Client) validateSession(ctx context.Context) (*onceAuthInfo, error) {
 	if err := checkStatus(resp, 201); err != nil {
 		return nil, err
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 
 	raw := resp.Header.Get("x-once-authentication-info")
 	if raw == "" {
@@ -273,7 +273,7 @@ func (c *Client) activateSession(ctx context.Context, challenge *onceAuthInfo, t
 	if err := checkStatus(resp, 200); err != nil {
 		return err
 	}
-	resp.Body.Close()
+	_ = resp.Body.Close()
 	return nil
 }
 
@@ -332,7 +332,7 @@ func (c *Client) refreshToken(ctx context.Context) error {
 
 func (c *Client) loadTokenCache() error {
 	path := expandPath(c.cfg.TokenCache)
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 -- path is the operator-configured local token cache path, not user/network input
 	if err != nil {
 		return err
 	}
@@ -349,7 +349,7 @@ func (c *Client) saveTokenCache() error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		return err
 	}
-	data, err := json.MarshalIndent(c.token, "", "  ")
+	data, err := json.MarshalIndent(c.token, "", "  ") // #nosec G117 -- intentionally writing the token cache file (0600) by design
 	if err != nil {
 		return err
 	}
@@ -460,7 +460,7 @@ func (c *Client) pollPushTAN(ctx context.Context, handler bank.ChallengeHandler,
 			return fmt.Errorf("poll photoTAN status: %w", err)
 		}
 		if err := checkStatus(resp, 200); err != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 			return fmt.Errorf("poll photoTAN status: %w", err)
 		}
 		var status authStatusResponse

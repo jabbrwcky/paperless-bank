@@ -62,7 +62,7 @@ func (s *Server) Run(ctx context.Context, listen string) error {
 		s.states[name] = &bankState{}
 	}
 
-	httpSrv := &http.Server{Addr: listen, Handler: s.routes()}
+	httpSrv := &http.Server{Addr: listen, Handler: s.routes(), ReadHeaderTimeout: 10 * time.Second}
 
 	errCh := make(chan error, 1)
 	go func() {

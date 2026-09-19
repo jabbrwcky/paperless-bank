@@ -36,14 +36,14 @@ func Do(client *http.Client, req *http.Request) (*http.Response, error) {
 			req.Body = body
 		}
 
-		resp, err = client.Do(req)
+		resp, err = client.Do(req) // #nosec G704 -- generic retry wrapper for this codebase's own clients; req is built from trusted config (bank/paperless-ngx base URLs), never from unsanitized network/user input
 		if !shouldRetry(resp, err) || attempt == maxAttempts {
 			return resp, err
 		}
 
 		wait := backoff(attempt, resp)
 		if resp != nil {
-			resp.Body.Close()
+			_ = resp.Body.Close()
 		}
 		select {
 		case <-req.Context().Done():

@@ -26,7 +26,7 @@ func loadWatermark(path string) (time.Time, error) {
 	if path == "" {
 		return time.Time{}, nil
 	}
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) // #nosec G304 -- path is a locally configured cache file path, not user/network input
 	if err != nil {
 		if os.IsNotExist(err) {
 			return time.Time{}, nil
