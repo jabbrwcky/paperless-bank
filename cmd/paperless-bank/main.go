@@ -34,10 +34,11 @@ type CLI struct {
 	Paperless PaperlessFlags `embed:"" prefix:"paperless-"`
 	Comdirect ComdirectFlags `embed:"" prefix:"comdirect-"`
 
-	Auth  AuthCmd  `cmd:"" help:"Authenticate with a bank and cache credentials"`
-	Sync  SyncCmd  `cmd:"" help:"Sync new documents from configured banks to paperless-ngx"`
-	List  ListCmd  `cmd:"" help:"List available documents without uploading"`
-	Serve ServeCmd `cmd:"" help:"Run as a long-lived server with a web UI for handling bank authentication"`
+	Auth       AuthCmd       `cmd:"" help:"Authenticate with a bank and cache credentials"`
+	Sync       SyncCmd       `cmd:"" help:"Sync new documents from configured banks to paperless-ngx"`
+	List       ListCmd       `cmd:"" help:"List available documents without uploading"`
+	Serve      ServeCmd      `cmd:"" help:"Run as a long-lived server with a web UI for handling bank authentication"`
+	Completion CompletionCmd `cmd:"" help:"Generate a shell completion script (bash, zsh, fish)"`
 }
 
 // bankConfig returns the bank.Config for the named bank, or nil if not recognised.
@@ -83,7 +84,7 @@ func main() {
 	)
 	ctx, err := k.Parse(os.Args[1:])
 	k.FatalIfErrorf(err)
-	k.FatalIfErrorf(ctx.Run(&cli))
+	k.FatalIfErrorf(ctx.Run(&cli, k))
 }
 
 // configFile returns the path to the YAML configuration file.

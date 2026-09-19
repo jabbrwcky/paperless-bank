@@ -96,6 +96,7 @@ directly.
 | `paperless-bank sync` | Fetch new documents from all configured banks and upload to paperless-ngx |
 | `paperless-bank list` | List available documents without uploading |
 | `paperless-bank serve` | Run `sync` on an interval with a web UI for auth challenges (see **Server mode**) |
+| `paperless-bank completion <shell>` | Print a bash/zsh/fish completion script, generated from the kong CLI definition via [`miekg/king`](https://github.com/miekg/king) |
 
 ## Configuration
 
