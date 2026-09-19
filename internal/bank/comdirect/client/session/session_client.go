@@ -44,9 +44,7 @@ func NewClientWithBearerToken(host, basePath, scheme, bearerToken string) Client
 	return &Client{transport: transport, formats: strfmt.Default}
 }
 
-/*
-Client for session API.
-*/
+// Client for session API.
 type Client struct {
 	transport runtime.ContextualTransport
 	formats   strfmt.Registry
@@ -79,17 +77,15 @@ type ClientService interface {
 	SetTransport(transport runtime.ContextualTransport)
 }
 
-/*
-SessionV1GetSessionreturns the current session objects for the specified client can handle the literal user for the currently logged in client.
-
-This method does not support injected context.
-However, timeout and opentracing contexts are honored whenever enabled.
-
-If you need to pass a specific context, use [Client.SessionV1GetSessionContext] instead.
-*/
+// SessionV1GetSession returns the current session objects for the specified client can handle the literal user for the currently logged in client.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.SessionV1GetSessionContext] instead.
 func (a *Client) SessionV1GetSession(params *SessionV1GetSessionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SessionV1GetSessionOK, error) {
 	var ctx context.Context
-	if params.inner.ctx != nil {
+	if params != nil && params.inner.ctx != nil {
 		ctx = params.inner.ctx
 	} else {
 		ctx = context.Background()
@@ -98,11 +94,9 @@ func (a *Client) SessionV1GetSession(params *SessionV1GetSessionParams, authInfo
 	return a.SessionV1GetSessionContext(ctx, params, authInfo, opts...)
 }
 
-/*
-SessionV1GetSessionContextreturns the current session objects for the specified client can handle the literal user for the currently logged in client.
-
-Do not use the deprecated [SessionV1GetSessionParams.Context] with this method: it would be ignored.
-*/
+// SessionV1GetSessionContext returns the current session objects for the specified client can handle the literal user for the currently logged in client.
+//
+// Do not use the deprecated [SessionV1GetSessionParams.Context] with this method: it would be ignored.
 func (a *Client) SessionV1GetSessionContext(ctx context.Context, params *SessionV1GetSessionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SessionV1GetSessionOK, error) {
 	// NOTE: parameters are not validated before sending
 	if params == nil {
@@ -146,17 +140,15 @@ func (a *Client) SessionV1GetSessionContext(ctx context.Context, params *Session
 	panic(msg)
 }
 
-/*
-SessionV1PatchSessionwrites updates to a session.
-
-This method does not support injected context.
-However, timeout and opentracing contexts are honored whenever enabled.
-
-If you need to pass a specific context, use [Client.SessionV1PatchSessionContext] instead.
-*/
+// SessionV1PatchSession writes updates to a session.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.SessionV1PatchSessionContext] instead.
 func (a *Client) SessionV1PatchSession(params *SessionV1PatchSessionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SessionV1PatchSessionOK, error) {
 	var ctx context.Context
-	if params.inner.ctx != nil {
+	if params != nil && params.inner.ctx != nil {
 		ctx = params.inner.ctx
 	} else {
 		ctx = context.Background()
@@ -165,11 +157,9 @@ func (a *Client) SessionV1PatchSession(params *SessionV1PatchSessionParams, auth
 	return a.SessionV1PatchSessionContext(ctx, params, authInfo, opts...)
 }
 
-/*
-SessionV1PatchSessionContextwrites updates to a session.
-
-Do not use the deprecated [SessionV1PatchSessionParams.Context] with this method: it would be ignored.
-*/
+// SessionV1PatchSessionContext writes updates to a session.
+//
+// Do not use the deprecated [SessionV1PatchSessionParams.Context] with this method: it would be ignored.
 func (a *Client) SessionV1PatchSessionContext(ctx context.Context, params *SessionV1PatchSessionParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SessionV1PatchSessionOK, error) {
 	// NOTE: parameters are not validated before sending
 	if params == nil {
@@ -213,17 +203,15 @@ func (a *Client) SessionV1PatchSessionContext(ctx context.Context, params *Sessi
 	panic(msg)
 }
 
-/*
-SessionV1PostSessionValidationvalidates the input and checks if the client is able to update the current session an activated session t a n cannot be deactivated in the current session it is necessary to provide a t a n when patching the activation of the session t a n.
-
-This method does not support injected context.
-However, timeout and opentracing contexts are honored whenever enabled.
-
-If you need to pass a specific context, use [Client.SessionV1PostSessionValidationContext] instead.
-*/
+// SessionV1PostSessionValidation validates the input and checks if the client is able to update the current session an activated session t a n cannot be deactivated in the current session it is necessary to provide a t a n when patching the activation of the session t a n.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.SessionV1PostSessionValidationContext] instead.
 func (a *Client) SessionV1PostSessionValidation(params *SessionV1PostSessionValidationParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SessionV1PostSessionValidationOK, error) {
 	var ctx context.Context
-	if params.inner.ctx != nil {
+	if params != nil && params.inner.ctx != nil {
 		ctx = params.inner.ctx
 	} else {
 		ctx = context.Background()
@@ -232,11 +220,9 @@ func (a *Client) SessionV1PostSessionValidation(params *SessionV1PostSessionVali
 	return a.SessionV1PostSessionValidationContext(ctx, params, authInfo, opts...)
 }
 
-/*
-SessionV1PostSessionValidationContextvalidates the input and checks if the client is able to update the current session an activated session t a n cannot be deactivated in the current session it is necessary to provide a t a n when patching the activation of the session t a n.
-
-Do not use the deprecated [SessionV1PostSessionValidationParams.Context] with this method: it would be ignored.
-*/
+// SessionV1PostSessionValidationContext validates the input and checks if the client is able to update the current session an activated session t a n cannot be deactivated in the current session it is necessary to provide a t a n when patching the activation of the session t a n.
+//
+// Do not use the deprecated [SessionV1PostSessionValidationParams.Context] with this method: it would be ignored.
 func (a *Client) SessionV1PostSessionValidationContext(ctx context.Context, params *SessionV1PostSessionValidationParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*SessionV1PostSessionValidationOK, error) {
 	// NOTE: parameters are not validated before sending
 	if params == nil {

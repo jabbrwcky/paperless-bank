@@ -43,11 +43,9 @@ func NewSessionV1GetSessionOK() *SessionV1GetSessionOK {
 	return &SessionV1GetSessionOK{}
 }
 
-/*
-SessionV1GetSessionOK describes a response with status code 200, with default header values.
-
-successful operation
-*/
+// SessionV1GetSessionOK describes a response with status code 200, with default header values.
+//
+// successful operation
 type SessionV1GetSessionOK struct {
 	Payload []*models.Session
 }
@@ -111,11 +109,9 @@ func NewSessionV1GetSessionInternalServerError() *SessionV1GetSessionInternalSer
 	return &SessionV1GetSessionInternalServerError{}
 }
 
-/*
-SessionV1GetSessionInternalServerError describes a response with status code 500, with default header values.
-
-Internal Server Error
-*/
+// SessionV1GetSessionInternalServerError describes a response with status code 500, with default header values.
+//
+// Internal Server Error
 type SessionV1GetSessionInternalServerError struct {
 }
 

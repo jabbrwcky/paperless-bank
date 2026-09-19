@@ -84,7 +84,7 @@ func (m *PercentageString) validatePreDecimalPlaces(formats strfmt.Registry) err
 }
 
 // ContextValidate validates this percentage string based on context it is used
-func (m *PercentageString) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *PercentageString) ContextValidate(_ context.Context, _ strfmt.Registry) error {
 	return nil
 }
 

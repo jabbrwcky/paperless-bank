@@ -62,10 +62,9 @@ MessagesV2GetDocumentParams contains all the parameters to send to the API endpo
 */
 type MessagesV2GetDocumentParams struct {
 
-	/* DocumentID.
-
-	   The unique ID of the document.
-	*/
+	// DocumentID.
+	//
+	// The unique ID of the document.
 	DocumentID string
 
 	HTTPClient *http.Client

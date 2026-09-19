@@ -55,7 +55,7 @@ func (m *CurrencyString) validateCurrency(formats strfmt.Registry) error {
 }
 
 // ContextValidate validates this currency string based on context it is used
-func (m *CurrencyString) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *CurrencyString) ContextValidate(_ context.Context, _ strfmt.Registry) error {
 	return nil
 }
 

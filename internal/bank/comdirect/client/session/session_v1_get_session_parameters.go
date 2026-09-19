@@ -62,10 +62,9 @@ SessionV1GetSessionParams contains all the parameters to send to the API endpoin
 */
 type SessionV1GetSessionParams struct {
 
-	/* User.
-
-	   The literal "user" or the UUID of the client.
-	*/
+	// User.
+	//
+	// The literal "user" or the UUID of the client.
 	User string
 
 	HTTPClient *http.Client

@@ -28,12 +28,12 @@ type Session struct {
 }
 
 // Validate validates this session
-func (m *Session) Validate(formats strfmt.Registry) error {
+func (m *Session) Validate(_ strfmt.Registry) error {
 	return nil
 }
 
 // ContextValidate validates this session based on context it is used
-func (m *Session) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *Session) ContextValidate(_ context.Context, _ strfmt.Registry) error {
 	return nil
 }
 

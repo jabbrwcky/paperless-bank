@@ -30,7 +30,7 @@ type AccountInformation struct {
 }
 
 // Validate validates this account information
-func (m *AccountInformation) Validate(formats strfmt.Registry) error {
+func (m *AccountInformation) Validate(_ strfmt.Registry) error {
 	return nil
 }
 

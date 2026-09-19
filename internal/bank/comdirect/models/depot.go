@@ -39,7 +39,7 @@ type Depot struct {
 }
 
 // Validate validates this depot
-func (m *Depot) Validate(formats strfmt.Registry) error {
+func (m *Depot) Validate(_ strfmt.Registry) error {
 	return nil
 }
 

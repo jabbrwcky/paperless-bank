@@ -63,27 +63,24 @@ MessagesV2GetDocumentsParams contains all the parameters to send to the API endp
 */
 type MessagesV2GetDocumentsParams struct {
 
-	/* PagingCount.
-
-	   The maximum number of results that will be returned.
-
-	   Format: int32
-	   Default: 20
-	*/
+	// PagingCount.
+	//
+	// The maximum number of results that will be returned.
+	//
+	// Format: int32
+	// Default: 20
 	PagingCount *int32
 
-	/* PagingFirst.
-
-	   Index of the returning results.
-
-	   Format: int32
-	*/
+	// PagingFirst.
+	//
+	// Index of the returning results.
+	//
+	// Format: int32
 	PagingFirst *int32
 
-	/* User.
-
-	   The literal "user" or the unique ID of the client.
-	*/
+	// User.
+	//
+	// The literal "user" or the unique ID of the client.
 	User string
 
 	HTTPClient *http.Client

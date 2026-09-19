@@ -66,16 +66,14 @@ type SessionV1PostSessionValidationParams struct {
 	// Body.
 	Body *models.Session
 
-	/* Session.
-
-	   Reference to the session (UUID)
-	*/
+	// Session.
+	//
+	// Reference to the session (UUID)
 	Session string
 
-	/* User.
-
-	   The literal "user" or the UUID of the client.
-	*/
+	// User.
+	//
+	// The literal "user" or the UUID of the client.
 	User string
 
 	HTTPClient *http.Client

@@ -22,12 +22,12 @@ type PagingInfo struct {
 }
 
 // Validate validates this paging info
-func (m *PagingInfo) Validate(formats strfmt.Registry) error {
+func (m *PagingInfo) Validate(_ strfmt.Registry) error {
 	return nil
 }
 
 // ContextValidate validates this paging info based on context it is used
-func (m *PagingInfo) ContextValidate(ctx context.Context, formats strfmt.Registry) error {
+func (m *PagingInfo) ContextValidate(_ context.Context, _ strfmt.Registry) error {
 	return nil
 }
 

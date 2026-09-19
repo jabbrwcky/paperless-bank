@@ -44,9 +44,7 @@ func NewClientWithBearerToken(host, basePath, scheme, bearerToken string) Client
 	return &Client{transport: transport, formats: strfmt.Default}
 }
 
-/*
-Client for messages API.
-*/
+// Client for messages API.
 type Client struct {
 	transport runtime.ContextualTransport
 	formats   strfmt.Registry
@@ -108,17 +106,15 @@ type ClientService interface {
 	SetTransport(transport runtime.ContextualTransport)
 }
 
-/*
-MessagesV2GetDocumentdelivers a document for the given UUID.
-
-This method does not support injected context.
-However, timeout and opentracing contexts are honored whenever enabled.
-
-If you need to pass a specific context, use [Client.MessagesV2GetDocumentContext] instead.
-*/
+// MessagesV2GetDocument delivers a document for the given UUID.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.MessagesV2GetDocumentContext] instead.
 func (a *Client) MessagesV2GetDocument(params *MessagesV2GetDocumentParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) error {
 	var ctx context.Context
-	if params.inner.ctx != nil {
+	if params != nil && params.inner.ctx != nil {
 		ctx = params.inner.ctx
 	} else {
 		ctx = context.Background()
@@ -127,11 +123,9 @@ func (a *Client) MessagesV2GetDocument(params *MessagesV2GetDocumentParams, auth
 	return a.MessagesV2GetDocumentContext(ctx, params, authInfo, opts...)
 }
 
-/*
-MessagesV2GetDocumentContextdelivers a document for the given UUID.
-
-Do not use the deprecated [MessagesV2GetDocumentParams.Context] with this method: it would be ignored.
-*/
+// MessagesV2GetDocumentContext delivers a document for the given UUID.
+//
+// Do not use the deprecated [MessagesV2GetDocumentParams.Context] with this method: it would be ignored.
 func (a *Client) MessagesV2GetDocumentContext(ctx context.Context, params *MessagesV2GetDocumentParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) error {
 	// NOTE: parameters are not validated before sending
 	if params == nil {
@@ -164,17 +158,15 @@ func (a *Client) MessagesV2GetDocumentContext(ctx context.Context, params *Messa
 	return nil
 }
 
-/*
-MessagesV2GetDocumentsdelivers a list of documents for the customer.
-
-This method does not support injected context.
-However, timeout and opentracing contexts are honored whenever enabled.
-
-If you need to pass a specific context, use [Client.MessagesV2GetDocumentsContext] instead.
-*/
+// MessagesV2GetDocuments delivers a list of documents for the customer.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.MessagesV2GetDocumentsContext] instead.
 func (a *Client) MessagesV2GetDocuments(params *MessagesV2GetDocumentsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MessagesV2GetDocumentsOK, error) {
 	var ctx context.Context
-	if params.inner.ctx != nil {
+	if params != nil && params.inner.ctx != nil {
 		ctx = params.inner.ctx
 	} else {
 		ctx = context.Background()
@@ -183,11 +175,9 @@ func (a *Client) MessagesV2GetDocuments(params *MessagesV2GetDocumentsParams, au
 	return a.MessagesV2GetDocumentsContext(ctx, params, authInfo, opts...)
 }
 
-/*
-MessagesV2GetDocumentsContextdelivers a list of documents for the customer.
-
-Do not use the deprecated [MessagesV2GetDocumentsParams.Context] with this method: it would be ignored.
-*/
+// MessagesV2GetDocumentsContext delivers a list of documents for the customer.
+//
+// Do not use the deprecated [MessagesV2GetDocumentsParams.Context] with this method: it would be ignored.
 func (a *Client) MessagesV2GetDocumentsContext(ctx context.Context, params *MessagesV2GetDocumentsParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) (*MessagesV2GetDocumentsOK, error) {
 	// NOTE: parameters are not validated before sending
 	if params == nil {
@@ -231,17 +221,15 @@ func (a *Client) MessagesV2GetDocumentsContext(ctx context.Context, params *Mess
 	panic(msg)
 }
 
-/*
-MessagesV2GetPredocumentdelivers a predocument for the given UUID.
-
-This method does not support injected context.
-However, timeout and opentracing contexts are honored whenever enabled.
-
-If you need to pass a specific context, use [Client.MessagesV2GetPredocumentContext] instead.
-*/
+// MessagesV2GetPredocument delivers a predocument for the given UUID.
+//
+// This method does not support injected context.
+// However, timeout and opentracing contexts are honored whenever enabled.
+//
+// If you need to pass a specific context, use [Client.MessagesV2GetPredocumentContext] instead.
 func (a *Client) MessagesV2GetPredocument(params *MessagesV2GetPredocumentParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) error {
 	var ctx context.Context
-	if params.inner.ctx != nil {
+	if params != nil && params.inner.ctx != nil {
 		ctx = params.inner.ctx
 	} else {
 		ctx = context.Background()
@@ -250,11 +238,9 @@ func (a *Client) MessagesV2GetPredocument(params *MessagesV2GetPredocumentParams
 	return a.MessagesV2GetPredocumentContext(ctx, params, authInfo, opts...)
 }
 
-/*
-MessagesV2GetPredocumentContextdelivers a predocument for the given UUID.
-
-Do not use the deprecated [MessagesV2GetPredocumentParams.Context] with this method: it would be ignored.
-*/
+// MessagesV2GetPredocumentContext delivers a predocument for the given UUID.
+//
+// Do not use the deprecated [MessagesV2GetPredocumentParams.Context] with this method: it would be ignored.
 func (a *Client) MessagesV2GetPredocumentContext(ctx context.Context, params *MessagesV2GetPredocumentParams, authInfo runtime.ClientAuthInfoWriter, opts ...ClientOption) error {
 	// NOTE: parameters are not validated before sending
 	if params == nil {

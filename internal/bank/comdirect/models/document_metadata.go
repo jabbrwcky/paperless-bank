@@ -34,7 +34,7 @@ type DocumentMetadata struct {
 }
 
 // Validate validates this document metadata
-func (m *DocumentMetadata) Validate(formats strfmt.Registry) error {
+func (m *DocumentMetadata) Validate(_ strfmt.Registry) error {
 	return nil
 }
 
