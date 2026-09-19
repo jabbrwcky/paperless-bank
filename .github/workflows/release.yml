@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-26.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+
+      # Cross-compiles from a single Linux runner for every target - Go's
+      # toolchain doesn't need the target OS/arch to build for it as long as
+      # CGO is disabled (true here: no cgo dependencies in this module).
+      - name: Build release archives
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64; do
+            goos="${target%/*}"
+            goarch="${target#*/}"
+            bin="paperless-bank"
+            [ "$goos" = "windows" ] && bin="paperless-bank.exe"
+
+            echo "Building $goos/$goarch"
+            CGO_ENABLED=0 GOOS="$goos" GOARCH="$goarch" \
+              go build -trimpath -ldflags "-s -w" -o "dist/$bin" ./cmd/paperless-bank
+
+            archive="paperless-bank-${GITHUB_REF_NAME}-${goos}-${goarch}"
+            if [ "$goos" = "windows" ]; then
+              (cd dist && zip -q "../${archive}.zip" "$bin")
+            else
+              (cd dist && tar -czf "../${archive}.tar.gz" "$bin")
+            fi
+            rm "dist/$bin"
+          done
+          sha256sum paperless-bank-*.tar.gz paperless-bank-*.zip > checksums.txt
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" \
+            paperless-bank-*.tar.gz paperless-bank-*.zip checksums.txt \
+            --title "$GITHUB_REF_NAME" \
+            --generate-notes
