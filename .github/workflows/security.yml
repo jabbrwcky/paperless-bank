@@ -31,7 +31,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@v2.29.0
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          args: ./...
+          go-version-file: go.mod
+
+      # The official Docker-based securego/gosec action bundles its own,
+      # potentially older Go toolchain with GOTOOLCHAIN=local, which breaks
+      # as soon as go.mod requires a newer patch version than that image
+      # ships (as happened here). Installing gosec directly avoids that
+      # coupling and uses the same toolchain as every other job.
+      - name: Install gosec
+        run: go install github.com/securego/gosec/v2/cmd/gosec@latest
+
+      - name: Run gosec
+        run: gosec ./...
