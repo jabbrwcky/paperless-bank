@@ -12,14 +12,19 @@ require (
 	github.com/go-openapi/swag/jsonutils v0.29.2
 	github.com/go-openapi/swag/typeutils v0.29.2
 	github.com/go-openapi/validate v1.0.0
+	github.com/miekg/king v1.0.16
 )
 
 require (
 	dario.cat/mergo v1.0.2 // indirect
+	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
+	github.com/SladkyCitron/slogcolor v1.9.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
+	github.com/creack/pty v1.1.24 // indirect
+	github.com/fatih/color v1.19.0 // indirect
 	github.com/felixge/httpsnoop v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/go-logr/logr v1.4.4 // indirect
@@ -33,7 +38,6 @@ require (
 	github.com/go-openapi/runtime/server-middleware v0.33.2 // indirect
 	github.com/go-openapi/spec v1.0.1 // indirect
 	github.com/go-openapi/swag/fileutils v0.29.2 // indirect
-	github.com/go-openapi/swag/jsonname v0.26.0 // indirect
 	github.com/go-openapi/swag/loading v0.29.2 // indirect
 	github.com/go-openapi/swag/mangling v0.29.2 // indirect
 	github.com/go-openapi/swag/netutils v0.29.2 // indirect
@@ -42,14 +46,18 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.29.2 // indirect
 	github.com/go-swagger/go-swagger v0.36.6 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
+	github.com/gomarkdown/markdown v0.0.0-20250810172220-2e2c11897d1a // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/handlers v1.5.2 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/jessevdk/go-flags v1.6.1 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
+	github.com/mattn/go-colorable v0.1.15 // indirect
+	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
+	github.com/mmarkdown/mmark/v2 v2.2.47 // indirect
 	github.com/oklog/ulid/v2 v2.1.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.4.3 // indirect
 	github.com/rogpeppe/go-internal v1.16.0 // indirect
