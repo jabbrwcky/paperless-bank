@@ -3,7 +3,7 @@ module github.com/jabbrwcky/paperless-bank
 go 1.26.4
 
 require (
-	github.com/alecthomas/kong v1.15.0
+	github.com/alecthomas/kong v1.16.1
 	github.com/alecthomas/kong-yaml v0.2.0
 	github.com/go-openapi/errors v0.22.8
 	github.com/go-openapi/runtime v0.32.3
