@@ -12,7 +12,7 @@ require (
 	github.com/go-openapi/swag/jsonutils v0.29.2
 	github.com/go-openapi/swag/typeutils v0.29.2
 	github.com/go-openapi/validate v1.0.0
-	github.com/miekg/king v1.0.16
+	github.com/miekg/king v1.0.17
 )
 
 require (
